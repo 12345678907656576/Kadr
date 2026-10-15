@@ -1,0 +1,3943 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#7C5CFF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Кадр">
+  <meta name="description" content="Личный список фильмов, сериалов и аниме">
+  <title>Кадр — мой список</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #121212;
+      --bg-elevated: #1a1a1a;
+      --bg-input: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --accent: #7c5cff;
+      --accent-text: #ffffff;
+      --danger: #ff8181;
+      --danger-bg: rgb(255 129 129 / 12%);
+      --status-wanted: #79a9ff;
+      --status-wanted-bg: rgb(121 169 255 / 14%);
+      --status-watching: #ffd166;
+      --status-watching-bg: rgb(255 209 102 / 14%);
+      --status-watched: #5dd39e;
+      --status-watched-bg: rgb(93 211 158 / 14%);
+      --status-dropped: #ff8181;
+      --status-dropped-bg: rgb(255 129 129 / 14%);
+      --progress-complete: #4ade80;
+      --theme-preview-light: #ffffff;
+      --theme-preview-dark: #121212;
+      --overlay-nav: rgb(18 18 18 / 94%);
+      --overlay-shadow: rgb(0 0 0 / 55%);
+      --overlay-backdrop: rgb(0 0 0 / 68%);
+      --background: var(--bg);
+      --surface: var(--bg-elevated);
+      --surface-raised: var(--bg-input);
+      --muted: var(--text-muted);
+      --accent-pressed: var(--accent);
+      --radius: 20px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --bg-elevated: #1a1a1a;
+      --bg-input: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --background: var(--bg);
+      --surface: var(--bg-elevated);
+      --surface-raised: var(--bg-input);
+      --muted: var(--text-muted);
+      --accent-pressed: var(--accent);
+      --overlay-nav: rgb(18 18 18 / 94%);
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #ffffff;
+      --bg-elevated: #f5f5f5;
+      --bg-input: #f0f0f0;
+      --border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --background: var(--bg);
+      --surface: var(--bg-elevated);
+      --surface-raised: var(--bg-input);
+      --muted: var(--text-muted);
+      --overlay-nav: rgb(255 255 255 / 94%);
+    }
+
+    [data-theme="custom"] {
+      color-scheme: dark;
+      --bg: var(--custom-bg, #121212);
+      --bg-elevated: var(--custom-bg-elevated, #1a1a1a);
+      --bg-input: var(--custom-bg-input, #1e1e1e);
+      --border: var(--custom-border, #2a2a2a);
+      --text: var(--custom-text, #ffffff);
+      --text-muted: var(--custom-text-muted, #888888);
+      --accent: var(--custom-accent, #7c5cff);
+      --accent-text: #ffffff;
+      --accent-pressed: var(--accent);
+      --background: var(--bg);
+      --surface: var(--bg-elevated);
+      --surface-raised: var(--bg-input);
+      --muted: var(--text-muted);
+      --overlay-nav: var(--bg);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      width: min(100%, 720px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 20px calc(104px + var(--safe-bottom));
+    }
+
+    .topbar,
+    .section-heading,
+    .card-heading,
+    .card-footer,
+    .filter-row,
+    .stats-grid,
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar {
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      margin: 0;
+      color: var(--text);
+      font-family: "Manrope", sans-serif;
+      font-size: 28px;
+      font-style: italic;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-accent {
+      color: var(--accent);
+    }
+
+    .eyebrow,
+    .muted {
+      color: var(--muted);
+    }
+
+    .eyebrow {
+      margin: 5px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .icon-button,
+    .text-button,
+    .primary-button,
+    .secondary-button,
+    .danger-button,
+    .nav-button,
+    .card-action {
+      min-height: 48px;
+      border: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background-color 220ms ease, color 220ms ease, transform 220ms ease;
+    }
+
+    .icon-button,
+    .card-action {
+      display: inline-grid;
+      width: 48px;
+      place-items: center;
+      background: var(--surface-raised);
+      color: var(--muted);
+    }
+
+    .icon-button:hover,
+    .card-action:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .section-heading {
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 1.55rem;
+      font-family: "Manrope", sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .section-heading p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button,
+    .text-button {
+      padding: 0 18px;
+      font-weight: 600;
+    }
+
+    .icon-button,
+    .nav-button,
+    .card-action {
+      font-weight: 600;
+    }
+
+    .primary-button {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .primary-button:hover {
+      background: var(--accent-pressed);
+      transform: translateY(-1px);
+    }
+
+    .secondary-button {
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    .secondary-button:hover {
+      background: var(--border);
+    }
+
+    .danger-button {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .text-button {
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .filter-panel {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .search-field,
+    .field-control {
+      width: 100%;
+      height: 52px;
+      min-height: 52px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .search-field::placeholder {
+      color: var(--text-muted);
+    }
+
+    .filter-row {
+      gap: 10px;
+    }
+
+    .filter-row select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .title-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      animation: rise-in 240ms ease both;
+    }
+
+    .card-heading {
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .title-main {
+      display: flex;
+      min-width: 0;
+      gap: 12px;
+    }
+
+    .title-main > div:last-child {
+      min-width: 0;
+    }
+
+    .cover-art {
+      display: grid;
+      width: 80px;
+      height: 120px;
+      flex: 0 0 80px;
+      overflow: hidden;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--surface-raised);
+    }
+
+    .cover-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .type-emoji {
+      flex: 0 0 auto;
+      font-size: 1.55rem;
+      line-height: 1.4;
+    }
+
+    .cover-placeholder {
+      font-size: 2rem;
+    }
+
+    .title-name {
+      overflow-wrap: anywhere;
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .title-year {
+      overflow: hidden;
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.87rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-comment {
+      display: -webkit-box;
+      overflow: hidden;
+      margin: 6px 0 0;
+      padding-left: 8px;
+      border-left: 2px solid var(--accent);
+      color: var(--muted);
+      font-size: 12px;
+      font-style: italic;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .progress-summary {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-summary.is-complete {
+      color: var(--progress-complete);
+    }
+
+    .card-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 4px;
+      margin: -6px -6px 0 0;
+    }
+
+    .card-action {
+      width: 40px;
+      min-height: 40px;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+
+    .card-footer {
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .status-wanted {
+      background: var(--status-wanted-bg);
+      color: var(--status-wanted);
+    }
+
+    .status-watching {
+      background: var(--status-watching-bg);
+      color: var(--status-watching);
+    }
+
+    .status-watched {
+      background: var(--status-watched-bg);
+      color: var(--status-watched);
+    }
+
+    .status-dropped {
+      background: var(--status-dropped-bg);
+      color: var(--status-dropped);
+    }
+
+    .rating {
+      color: var(--status-watching);
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .watched-date {
+      margin: 10px 0 0 44px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .empty-state {
+      padding: 48px 22px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 1.05rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card,
+    .stats-panel {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .stat-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.87rem;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-top: 9px;
+      font-size: 1.7rem;
+      letter-spacing: -0.04em;
+    }
+
+    .stats-panel {
+      margin-top: 14px;
+    }
+
+    .profile-header {
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    .profile-avatar {
+      margin-bottom: 8px;
+      font-size: 64px;
+    }
+
+    .profile-header h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+
+    .profile-level {
+      margin: 0;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .xp-bar-wrapper,
+    .xp-breakdown {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .xp-bar-wrapper {
+      margin-bottom: 20px;
+    }
+
+    .xp-bar {
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      background: var(--surface-raised);
+    }
+
+    .xp-bar-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), #a78bfa);
+      transition: width 0.3s ease;
+    }
+
+    .xp-bar-info {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .xp-to-next {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .profile-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .profile-stat-card {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .profile-stat-value {
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .profile-stat-label {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .xp-breakdown h3 {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .xp-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .xp-negative {
+      color: #ef4444;
+    }
+
+    .xp-total {
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    .ach-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .ach-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .ach-counter {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .ach-progress-bar {
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      border-radius: 3px;
+      background: var(--surface-raised);
+    }
+
+    .ach-progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), #a78bfa);
+      transition: width 0.3s;
+    }
+
+    .ach-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ach-tab {
+      min-width: 0;
+      flex: 1;
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .ach-tab.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .ach-back,
+    .profile-achievements-btn,
+    .profile-statistics-btn {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .ach-back {
+      justify-content: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .profile-achievements-btn {
+      margin-top: 16px;
+    }
+
+    .profile-statistics-btn {
+      margin-top: 10px;
+    }
+
+    .profile-achievements-btn .ach-count {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .profile-statistics-btn .arrow {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .popular-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .popular-header h2 {
+      margin: 0;
+      font-size: 1.55rem;
+    }
+
+    .refresh-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .refresh-btn.spinning {
+      animation: refresh-spin 0.6s ease;
+    }
+
+    @keyframes refresh-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .popular-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .pop-tab {
+      min-width: 0;
+      flex: 1;
+      padding: 10px 6px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .pop-tab.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .popular-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .popular-grid > .empty-state {
+      grid-column: 1 / -1;
+    }
+
+    .popular-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .popular-card:active {
+      transform: scale(0.97);
+    }
+
+    .popular-card img,
+    .popular-poster-placeholder {
+      display: grid;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      place-items: center;
+      background: var(--surface-raised);
+      font-size: 38px;
+    }
+
+    .popular-card-info {
+      padding: 8px 10px;
+    }
+
+    .popular-card-title {
+      display: -webkit-box;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .popular-card-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .popular-card-rating {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 7px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #ffd700;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .popular-skeleton {
+      aspect-ratio: 3 / 4;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: popular-shimmer 1.5s infinite;
+    }
+
+    @keyframes popular-shimmer {
+      to { background-position: -200% 0; }
+    }
+
+    .ach-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .achievement-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      position: relative;
+      background: var(--surface);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .achievement-card.unlocked {
+      border-color: var(--accent);
+    }
+
+    .achievement-card.locked {
+      opacity: 0.4;
+    }
+
+    .ach-icon {
+      margin-bottom: 6px;
+      font-size: 32px;
+    }
+
+    .ach-title {
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .ach-desc {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .ach-xp {
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgb(124 92 255 / 15%);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .achievement-card.locked .ach-xp {
+      background: var(--surface-raised);
+      color: var(--muted);
+    }
+
+    .achievement-toast {
+      position: fixed;
+      z-index: 1000;
+      top: 20px;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: max-content;
+      max-width: min(320px, calc(100vw - 32px));
+      padding: 12px 16px;
+      transform: translateX(-50%) translateY(-150%);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .achievement-toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-icon {
+      font-size: 28px;
+    }
+
+    .toast-title {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .toast-name {
+      margin-top: 2px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .toast-xp {
+      margin-top: 4px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stats-panel h3 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+    }
+
+    .type-stat-list,
+    .top-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .type-stat,
+    .top-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .top-item {
+      justify-content: flex-start;
+    }
+
+    .top-rank {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--surface-raised);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .top-title {
+      min-width: 0;
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .top-item .rating {
+      font-size: 0.9rem;
+    }
+
+    .view[hidden] {
+      display: none;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 2;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      width: min(100%, 720px);
+      margin: 0 auto;
+      padding: 10px 16px calc(10px + var(--safe-bottom));
+      border-top: 1px solid var(--border);
+      background: var(--overlay-nav);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-button {
+      display: grid;
+      min-height: 58px;
+      gap: 2px;
+      place-items: center;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.58rem;
+      font-weight: 600;
+    }
+
+    .nav-button span:first-child {
+      font-size: 1.15rem;
+    }
+
+    .nav-button[aria-current="page"],
+    .nav-button.active {
+      color: var(--accent);
+    }
+
+    @media (max-width: 380px) {
+      .bottom-nav {
+        gap: 2px;
+        padding-right: 8px;
+        padding-left: 8px;
+      }
+
+      .nav-button {
+        font-size: 0.55rem;
+      }
+    }
+
+    .settings-group {
+      margin-bottom: 24px;
+    }
+
+    .settings-group h3 {
+      margin: 0 0 10px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .settings-hint {
+      margin: -4px 0 10px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .settings-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-raised);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .settings-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .settings-toast {
+      position: fixed;
+      z-index: 1001;
+      bottom: calc(88px + var(--safe-bottom));
+      left: 50%;
+      padding: 10px 16px;
+      transform: translate(-50%, 16px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .settings-toast.show {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .theme-btn {
+      display: flex;
+      min-height: 90px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .theme-btn.active {
+      border-color: var(--accent);
+    }
+
+    .theme-preview {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .theme-preview.light {
+      background: var(--theme-preview-light);
+    }
+
+    .theme-preview.dark {
+      background: var(--theme-preview-dark);
+    }
+
+    .theme-preview.custom {
+      background: linear-gradient(135deg, var(--custom-bg, #121212) 50%, var(--custom-accent, #7c5cff) 50%);
+    }
+
+    .custom-theme-panel label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .custom-theme-panel input[type="color"] {
+      width: 48px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .movie-meta-title {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    dialog {
+      width: min(calc(100% - 28px), 480px);
+      max-height: min(90vh, 760px);
+      padding: 0;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 24px 80px var(--overlay-shadow);
+    }
+
+    dialog::backdrop {
+      background: var(--overlay-backdrop);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      padding: 22px;
+    }
+
+    .modal-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-heading h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-family: "Manrope", sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .form-body {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .form-fields {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-cover {
+      width: 180px;
+      flex-shrink: 0;
+    }
+
+    .cover-preview {
+      position: relative;
+      display: flex;
+      width: 180px;
+      height: 260px;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-input);
+    }
+
+    .cover-preview .cover-emoji {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .cover-preview .cover-spinner {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--text-muted);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: cover-spin 0.8s linear infinite;
+    }
+
+    .cover-preview .cover-img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cover-preview[data-state="empty"] .cover-emoji,
+    .cover-preview[data-state="error"] .cover-emoji {
+      display: inline;
+    }
+
+    .cover-preview[data-state="empty"] .cover-spinner,
+    .cover-preview[data-state="empty"] .cover-img,
+    .cover-preview[data-state="error"] .cover-spinner,
+    .cover-preview[data-state="error"] .cover-img {
+      display: none;
+    }
+
+    .cover-preview[data-state="loading"] .cover-emoji,
+    .cover-preview[data-state="loading"] .cover-img,
+    .cover-preview[data-state="loaded"] .cover-emoji,
+    .cover-preview[data-state="loaded"] .cover-spinner {
+      display: none;
+    }
+
+    .cover-preview[data-state="loading"] .cover-spinner {
+      display: block;
+    }
+
+    .cover-preview[data-state="loading-cover"] .cover-img {
+      display: block;
+      filter: brightness(0.65);
+    }
+
+    .cover-preview[data-state="loading-cover"] .cover-spinner {
+      position: absolute;
+      z-index: 1;
+      display: block;
+    }
+
+    .cover-preview[data-state="loaded"] .cover-img {
+      display: block;
+    }
+
+    .cover-preview[data-state="error"] .cover-emoji {
+      opacity: 0.3;
+    }
+
+    .form-cover .cover-hint {
+      display: none;
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .form-cover .cover-preview[data-state="error"] + .cover-hint {
+      display: block;
+    }
+
+    @keyframes cover-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .form-field {
+      display: grid;
+      min-width: 0;
+      align-content: start;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .form-field .field-control {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .title-input-wrap {
+      position: relative;
+    }
+
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      z-index: 100;
+      max-height: 260px;
+      margin-top: 4px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-input);
+    }
+
+    .suggestion-item {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item:focus-visible {
+      background: var(--border);
+    }
+
+    .suggestion-item img {
+      width: 40px;
+      height: 60px;
+      flex: 0 0 auto;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--border);
+    }
+
+    .suggestion-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .suggestion-title {
+      display: block;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .suggestion-meta {
+      display: block;
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .suggestion-empty {
+      padding: 10px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .form-row {
+      display: grid;
+      align-items: start;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .anime-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .anime-info[data-state="loaded"] .anime-info-text {
+      color: var(--text);
+    }
+
+    .anime-info[data-state="empty"] {
+      display: none;
+    }
+
+    .movie-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .movie-info[hidden] {
+      display: none;
+    }
+
+    .movie-info[data-state="empty"] {
+      display: none;
+    }
+
+    .movie-info[data-state="loaded"] .movie-info-text {
+      color: var(--text-muted);
+    }
+
+    .progress-control[hidden] {
+      display: none;
+    }
+
+    .comment-input {
+      width: 100%;
+      min-height: 80px;
+      max-height: 200px;
+      padding: 12px 14px;
+      box-sizing: border-box;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-raised);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .comment-input::placeholder {
+      color: var(--muted);
+    }
+
+    .comment-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .progress-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .progress-field input {
+      width: 80px;
+      text-align: center;
+    }
+
+    .progress-sep {
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .modal-actions {
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 560px) {
+      .form-body {
+        flex-direction: column-reverse;
+        gap: 16px;
+      }
+
+      .form-cover {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .import-export {
+      display: flex;
+      gap: 8px;
+    }
+
+    .import-export .secondary-button {
+      padding: 0 13px;
+      font-size: 0.86rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (min-width: 600px) {
+      .app-shell {
+        padding-top: 36px;
+      }
+
+      .filter-panel {
+        grid-template-columns: 1.4fr 1fr;
+      }
+
+      .filter-row {
+        display: contents;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1 class="logo">
+          <span class="logo-accent">К</span>адр
+        </h1>
+        <p class="eyebrow">Истории, которые ты посмотрел</p>
+      </div>
+      <div class="import-export" aria-label="Импорт и экспорт">
+        <button class="secondary-button" id="export-button" type="button" aria-label="Экспорт JSON">Экспорт</button>
+        <button class="secondary-button" id="import-button" type="button" aria-label="Импорт JSON">Импорт</button>
+        <input class="visually-hidden" id="import-file" type="file" accept="application/json,.json">
+      </div>
+    </header>
+
+    <section class="view" id="list-view" aria-labelledby="list-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="list-title">Моя коллекция</h2>
+          <p id="list-count">Пока пусто — самое время начать</p>
+        </div>
+      </div>
+      <div class="filter-panel">
+        <label class="visually-hidden" for="search-input">Поиск по названию</label>
+        <input class="search-field" id="search-input" type="search" placeholder="Найти тайтл..." autocomplete="off">
+        <div class="filter-row">
+          <label class="visually-hidden" for="type-filter">Фильтр по типу</label>
+          <select class="field-control" id="type-filter">
+            <option value="all">Все типы</option>
+            <option value="movie">Фильмы</option>
+            <option value="series">Сериалы</option>
+            <option value="anime">Аниме</option>
+          </select>
+          <label class="visually-hidden" for="status-filter">Фильтр по статусу</label>
+          <select class="field-control" id="status-filter">
+            <option value="all">Все статусы</option>
+            <option value="wanted">Хочу</option>
+            <option value="watching">Смотрю</option>
+            <option value="watched">Просмотрено</option>
+            <option value="dropped">Брошено</option>
+          </select>
+        </div>
+      </div>
+      <div class="title-list" id="title-list" aria-live="polite"></div>
+    </section>
+
+    <section class="view" id="popular-screen" aria-labelledby="popular-title" hidden>
+      <div class="popular-header">
+        <h2 id="popular-title">Популярное</h2>
+        <button class="refresh-btn" id="refresh-popular" type="button" aria-label="Обновить подборку">🔄</button>
+      </div>
+      <div class="popular-tabs" role="tablist" aria-label="Тип популярных тайтлов">
+        <button class="pop-tab active" type="button" data-type="movie" role="tab" aria-selected="true">Фильмы</button>
+        <button class="pop-tab" type="button" data-type="series" role="tab" aria-selected="false">Сериалы</button>
+        <button class="pop-tab" type="button" data-type="anime" role="tab" aria-selected="false">Аниме</button>
+      </div>
+      <div class="popular-grid" id="popular-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="view" id="stats-view" aria-labelledby="stats-title" hidden>
+      <button class="ach-back" type="button" data-view="profile">← Профиль</button>
+      <div class="section-heading">
+        <div>
+          <h2 id="stats-title">Статистика</h2>
+          <p>Твой год в историях и цифрах</p>
+        </div>
+      </div>
+      <div id="stats-content"></div>
+    </section>
+
+    <section class="view" id="profile-screen" aria-labelledby="profile-title" hidden>
+      <div class="profile-header">
+        <div class="profile-avatar" aria-hidden="true">👤</div>
+        <h2 id="profile-title">Мой профиль</h2>
+        <p class="profile-level" id="profile-level">Уровень 1</p>
+      </div>
+      <div id="profile-content"></div>
+    </section>
+
+    <section class="view" id="achievements-screen" aria-labelledby="achievements-title" hidden>
+      <button class="ach-back" type="button" data-view="profile">← Профиль</button>
+      <div class="ach-header">
+        <h2 id="achievements-title">Достижения</h2>
+        <div class="ach-counter" id="ach-counter">0 / 19</div>
+      </div>
+      <div class="ach-progress-bar" role="progressbar" aria-label="Полученные достижения"
+        aria-valuemin="0" aria-valuemax="19" aria-valuenow="0">
+        <div class="ach-progress-fill" id="ach-progress-fill"></div>
+      </div>
+      <div class="ach-tabs" role="group" aria-label="Фильтр достижений">
+        <button class="ach-tab active" type="button" data-filter="all" aria-pressed="true">Все</button>
+        <button class="ach-tab" type="button" data-filter="unlocked" aria-pressed="false">Полученные</button>
+        <button class="ach-tab" type="button" data-filter="locked" aria-pressed="false">Заблокированные</button>
+      </div>
+      <div class="ach-list" id="ach-list"></div>
+    </section>
+
+    <section class="view" id="settings-screen" aria-labelledby="settings-title" hidden>
+      <div class="section-heading">
+        <div>
+          <h2 id="settings-title">Настройки</h2>
+        </div>
+      </div>
+      <div class="settings-group">
+        <h3>Тема</h3>
+        <div class="theme-options" role="group" aria-label="Выбор темы">
+          <button class="theme-btn" type="button" data-theme-value="light" aria-pressed="false">
+            <span class="theme-preview light" aria-hidden="true"></span>
+            <span>Светлая</span>
+          </button>
+          <button class="theme-btn" type="button" data-theme-value="dark" aria-pressed="false">
+            <span class="theme-preview dark" aria-hidden="true"></span>
+            <span>Тёмная</span>
+          </button>
+          <button class="theme-btn" type="button" data-theme-value="custom" aria-pressed="false">
+            <span class="theme-preview custom" aria-hidden="true"></span>
+            <span>Своя</span>
+          </button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <h3>Стартовая вкладка</h3>
+        <p class="settings-hint">С какой вкладки открывать приложение</p>
+        <select id="startup-screen" class="settings-select">
+          <option value="list">Список</option>
+          <option value="add">Добавить</option>
+          <option value="popular">Популярное</option>
+          <option value="profile">Профиль</option>
+          <option value="settings">Настройки</option>
+        </select>
+      </div>
+      <div class="settings-group custom-theme-panel" id="custom-theme-panel" hidden>
+        <h3>Свой цвет</h3>
+        <label for="custom-bg">
+          <span>Фон</span>
+          <input type="color" id="custom-bg" value="#121212">
+        </label>
+        <label for="custom-bg-elevated">
+          <span>Карточки</span>
+          <input type="color" id="custom-bg-elevated" value="#1a1a1a">
+        </label>
+        <label for="custom-text">
+          <span>Текст</span>
+          <input type="color" id="custom-text" value="#ffffff">
+        </label>
+        <label for="custom-accent">
+          <span>Акцент</span>
+          <input type="color" id="custom-accent" value="#7c5cff">
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Основная навигация">
+    <button class="nav-button" type="button" data-view="list" aria-current="page">
+      <span aria-hidden="true">▤</span><span>Список</span>
+    </button>
+    <button class="nav-button" type="button" data-action="add">
+      <span aria-hidden="true">＋</span><span>Добавить</span>
+    </button>
+    <button class="nav-button" type="button" data-view="popular">
+      <span aria-hidden="true">🔥</span><span>Популярное</span>
+    </button>
+    <button class="nav-button" type="button" data-view="profile">
+      <span aria-hidden="true">👤</span><span>Профиль</span>
+    </button>
+    <button class="nav-button" type="button" data-view="settings">
+      <span aria-hidden="true">⚙️</span><span>Настройки</span>
+    </button>
+  </nav>
+  <div class="settings-toast" id="settings-toast" role="status" aria-live="polite"></div>
+
+  <dialog id="title-dialog" aria-labelledby="dialog-title">
+    <form class="modal-content" id="title-form">
+      <div class="modal-heading">
+        <h2 id="dialog-title">Новый тайтл</h2>
+        <button class="icon-button" id="close-dialog" type="button" aria-label="Закрыть">✕</button>
+      </div>
+      <div class="form-body">
+        <div class="form-fields">
+          <div class="form-field">
+            <label for="title-name">Название</label>
+            <div class="title-input-wrap">
+              <input class="field-control" id="title-name" name="name" type="text" maxlength="120" required placeholder="Например, Интерстеллар" autocomplete="off">
+              <div class="search-suggestions" id="search-suggestions" role="listbox" aria-label="Подсказки" hidden></div>
+            </div>
+            <small class="movie-meta-title" id="movie-meta-title" aria-live="polite" hidden></small>
+          </div>
+          <div class="form-row">
+            <label class="form-field" for="title-type">
+              Тип
+              <select class="field-control" id="title-type" name="type" required>
+                <option value="movie">Фильм</option>
+                <option value="series">Сериал</option>
+                <option value="anime">Аниме</option>
+              </select>
+            </label>
+            <div class="form-field">
+              <label for="title-year">Год</label>
+              <input class="field-control" id="title-year" name="year" type="number" min="1888" max="2100" inputmode="numeric" placeholder="Необязательно">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-field" for="title-status">
+              Статус
+              <select class="field-control" id="title-status" name="status" required>
+                <option value="wanted">Хочу</option>
+                <option value="watching">Смотрю</option>
+                <option value="watched">Просмотрено</option>
+                <option value="dropped">Брошено</option>
+              </select>
+            </label>
+            <label class="form-field" for="title-rating">
+              Оценка
+              <input class="field-control" id="title-rating" name="rating" type="number" min="1" max="10" step="1" inputmode="numeric" placeholder="1–10">
+            </label>
+          </div>
+          <div class="form-field">
+            <label for="title-comment">Комментарий</label>
+            <textarea class="comment-input" id="title-comment" name="comment" rows="3"
+              placeholder="Что запомнилось? Стоит ли пересматривать?"></textarea>
+          </div>
+          <div class="movie-info" id="movie-info" data-state="empty" hidden>
+            <span class="movie-info-text">—</span>
+          </div>
+          <div class="form-field progress-control" id="progress-control" hidden>
+            <label>Прогресс</label>
+            <div class="progress-field">
+              <input class="field-control" id="progress-season" name="progressSeason" type="number" min="1" placeholder="Сезон" aria-label="Текущий сезон">
+              <span class="progress-sep" aria-hidden="true">×</span>
+              <input class="field-control" id="progress-episode" name="progressEpisode" type="number" min="1" placeholder="Серия" aria-label="Последняя просмотренная серия">
+            </div>
+            <div class="anime-info" id="anime-info" data-state="empty">
+              <span class="anime-info-text">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-cover">
+          <div class="cover-preview" id="cover-preview" data-state="empty" aria-live="polite">
+            <span class="cover-emoji" aria-hidden="true">🍥</span>
+            <span class="cover-spinner" aria-hidden="true"></span>
+            <img class="cover-img" id="cover-img" src="" alt="">
+          </div>
+          <p class="cover-hint">Не найдено</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="text-button" id="cancel-dialog" type="button">Отмена</button>
+        <button class="primary-button" type="submit">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="cover-service.js"></script>
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "kadr-watchlist-v1";
+      const SETTINGS_STORAGE_KEY = "settings";
+      const DEFAULT_CUSTOM_COLORS = {
+        bg: "#121212",
+        elevated: "#1a1a1a",
+        text: "#ffffff",
+        accent: "#7c5cff"
+      };
+      const VALID_THEMES = ["light", "dark", "custom"];
+      const types = {
+        movie: { label: "Фильм", emoji: "🎬" },
+        series: { label: "Сериал", emoji: "📺" },
+        anime: { label: "Аниме", emoji: "🍥" }
+      };
+      const statuses = {
+        wanted: { label: "Хочу", className: "status-wanted" },
+        watching: { label: "Смотрю", className: "status-watching" },
+        watched: { label: "Просмотрено", className: "status-watched" },
+        dropped: { label: "Брошено", className: "status-dropped" }
+      };
+      const XP_PER_STATUS = {
+        wanted: 1,
+        watching: 3,
+        watched: 10,
+        dropped: -5
+      };
+      const ACHIEVEMENTS = [
+        { id: "rating_1", icon: "⭐", xp: 10, title: "Первая оценка", desc: "Поставить первую оценку", group: "rating", check: (stats) => stats.ratedCount >= 1 },
+        { id: "rating_10", icon: "🌟", xp: 50, title: "Критик", desc: "Поставить 10 оценок", group: "rating", check: (stats) => stats.ratedCount >= 10 },
+        { id: "rating_50", icon: "💫", xp: 200, title: "Ценитель", desc: "Поставить 50 оценок", group: "rating", check: (stats) => stats.ratedCount >= 50 },
+        { id: "rating_100", icon: "🏅", xp: 500, title: "Эксперт", desc: "Поставить 100 оценок", group: "rating", check: (stats) => stats.ratedCount >= 100 },
+        { id: "rating_500", icon: "👑", xp: 2000, title: "Мастер оценок", desc: "Поставить 500 оценок", group: "rating", check: (stats) => stats.ratedCount >= 500 },
+        { id: "watched_1", icon: "🎬", xp: 15, title: "Первый просмотр", desc: "Досмотреть первый тайтл", group: "watch", check: (stats) => stats.watchedCount >= 1 },
+        { id: "watched_25", icon: "🍿", xp: 100, title: "Киноман", desc: "Досмотреть 25 тайтлов", group: "watch", check: (stats) => stats.watchedCount >= 25 },
+        { id: "watched_100", icon: "🎥", xp: 500, title: "Заядлый зритель", desc: "Досмотреть 100 тайтлов", group: "watch", check: (stats) => stats.watchedCount >= 100 },
+        { id: "watched_500", icon: "🏆", xp: 2500, title: "Легенда экрана", desc: "Досмотреть 500 тайтлов", group: "watch", check: (stats) => stats.watchedCount >= 500 },
+        { id: "watching_1", icon: "▶️", xp: 10, title: "Начало пути", desc: "Начать смотреть первый тайтл", group: "watch", check: (stats) => stats.watchingCount >= 1 },
+        { id: "watching_5", icon: "📺", xp: 80, title: "Мультизадачный", desc: "Смотреть 5 тайтлов одновременно", group: "watch", check: (stats) => stats.watchingCount >= 5 },
+        { id: "watching_10", icon: "🔥", xp: 250, title: "Марафонец", desc: "Смотреть 10 тайтлов одновременно", group: "watch", check: (stats) => stats.watchingCount >= 10 },
+        { id: "level_5", icon: "🥉", xp: 50, title: "Новичок", desc: "Достичь 5 уровня", group: "level", check: (stats) => stats.level >= 5 },
+        { id: "level_10", icon: "🥈", xp: 150, title: "Опытный", desc: "Достичь 10 уровня", group: "level", check: (stats) => stats.level >= 10 },
+        { id: "level_15", icon: "🥇", xp: 300, title: "Ветеран", desc: "Достичь 15 уровня", group: "level", check: (stats) => stats.level >= 15 },
+        { id: "level_20", icon: "💎", xp: 500, title: "Мастер", desc: "Достичь 20 уровня", group: "level", check: (stats) => stats.level >= 20 },
+        { id: "level_25", icon: "🏰", xp: 800, title: "Гуру", desc: "Достичь 25 уровня", group: "level", check: (stats) => stats.level >= 25 },
+        { id: "level_30", icon: "👑", xp: 1200, title: "Легенда", desc: "Достичь 30 уровня", group: "level", check: (stats) => stats.level >= 30 },
+        { id: "level_50", icon: "🌌", xp: 3000, title: "Бессмертный", desc: "Достичь 50 уровня", group: "level", check: (stats) => stats.level >= 50 }
+      ];
+      const ACHIEVEMENTS_STORAGE_KEY = "achievements";
+      const achievementsScreen = document.querySelector("#achievements-screen");
+      const achievementsList = document.querySelector("#ach-list");
+      const achievementsCounter = document.querySelector("#ach-counter");
+      const achievementsProgress = document.querySelector(".ach-progress-bar");
+      const achievementsProgressFill = document.querySelector("#ach-progress-fill");
+      const achievementTabs = document.querySelectorAll(".ach-tab");
+      const achievementToastQueue = [];
+      let achievementToastActive = false;
+      let achievementToastTimer = null;
+      let achievementFilter = "all";
+      const listView = document.querySelector("#list-view");
+      const popularView = document.querySelector("#popular-screen");
+      const popularGrid = document.querySelector("#popular-grid");
+      const popularTabs = document.querySelectorAll(".pop-tab");
+      const refreshPopularButton = document.querySelector("#refresh-popular");
+      const startupScreenSelect = document.querySelector("#startup-screen");
+      const startupToast = document.querySelector("#settings-toast");
+      const statsView = document.querySelector("#stats-view");
+      const profileView = document.querySelector("#profile-screen");
+      const profileContent = document.querySelector("#profile-content");
+      const profileLevel = document.querySelector("#profile-level");
+      const settingsView = document.querySelector("#settings-screen");
+      const customThemePanel = document.querySelector("#custom-theme-panel");
+      const themeButtons = document.querySelectorAll(".theme-btn");
+      const customColorInputs = {
+        bg: document.querySelector("#custom-bg"),
+        elevated: document.querySelector("#custom-bg-elevated"),
+        text: document.querySelector("#custom-text"),
+        accent: document.querySelector("#custom-accent")
+      };
+      const titleList = document.querySelector("#title-list");
+      const listCount = document.querySelector("#list-count");
+      const statsContent = document.querySelector("#stats-content");
+      const dialog = document.querySelector("#title-dialog");
+      const form = document.querySelector("#title-form");
+      const nameInput = document.querySelector("#title-name");
+      const commentInput = document.querySelector("#title-comment");
+      const movieMetaTitle = document.querySelector("#movie-meta-title");
+      const searchSuggestions = document.querySelector("#search-suggestions");
+      const typeInput = document.querySelector("#title-type");
+      const yearInput = document.querySelector("#title-year");
+      const movieInfo = document.querySelector("#movie-info");
+      const movieInfoText = movieInfo.querySelector(".movie-info-text");
+      const statusInput = document.querySelector("#title-status");
+      const ratingInput = document.querySelector("#title-rating");
+      const progressControl = document.querySelector("#progress-control");
+      const progressSeasonInput = document.querySelector("#progress-season");
+      const progressEpisodeInput = document.querySelector("#progress-episode");
+      const animeInfo = document.querySelector("#anime-info");
+      const animeInfoText = animeInfo.querySelector(".anime-info-text");
+      const coverPreview = document.querySelector("#cover-preview");
+      const coverImage = document.querySelector("#cover-img");
+      const submitButton = form.querySelector('button[type="submit"]');
+      const searchInput = document.querySelector("#search-input");
+      const typeFilter = document.querySelector("#type-filter");
+      const statusFilter = document.querySelector("#status-filter");
+      const importFile = document.querySelector("#import-file");
+      const animeCoverCache = Object.create(null);
+      const popularCache = { movie: null, series: null, anime: null };
+      const popularControllers = { movie: null, series: null, anime: null };
+      const popularFetchers = {
+        movie: fetchPopularMovies,
+        series: fetchPopularSeries,
+        anime: fetchPopularAnime
+      };
+      let activePopularType = "movie";
+      let popularItems = [];
+      let popularRequestId = 0;
+      let startupToastTimer = null;
+      let currentView = "list";
+      let titles = loadTitles();
+      let editingId = null;
+      let animeCoverDebounceTimer = null;
+      let animeCoverRequestController = null;
+      let animeCoverRequestId = 0;
+      let animeSearchDebounceTimer = null;
+      let animeSearchController = null;
+      let animeSearchRequestId = 0;
+      let animeSearchResults = [];
+      let yearManuallyEdited = false;
+      let movieSearchDebounceTimer = null;
+      let movieSearchController = null;
+      let movieSearchRequestId = 0;
+      let movieSearchResults = [];
+      let selectedAnimeMeta = null;
+      let movieMetaDebounceTimer = null;
+      let movieMetaRequestController = null;
+      let movieMetaRequestId = 0;
+      let movieMetaPendingPromise = null;
+      let movieMetaPendingResolve = null;
+      let selectedMovieMeta = null;
+      let prefillDetailsPromise = null;
+      let prefillRequestController = null;
+      let prefillRequestId = 0;
+      let settings = loadSettings();
+      const startupScreens = {
+        list: "Список",
+        add: "Добавить",
+        popular: "Популярное",
+        profile: "Профиль",
+        settings: "Настройки"
+      };
+      const startupScreen = loadStartupScreen();
+      startupScreenSelect.value = startupScreen;
+
+      function loadStartupScreen() {
+        try {
+          const saved = localStorage.getItem("startupScreen");
+          return Object.hasOwn(startupScreens, saved) ? saved : "list";
+        } catch (error) {
+          console.error("Не удалось прочитать стартовую вкладку.", error);
+          return "list";
+        }
+      }
+
+      function showStartupToast(screen) {
+        startupToast.textContent = `Стартовая вкладка: ${startupScreens[screen]}`;
+        startupToast.classList.add("show");
+        clearTimeout(startupToastTimer);
+        startupToastTimer = setTimeout(() => startupToast.classList.remove("show"), 1500);
+      }
+
+      function loadSettings() {
+        try {
+          const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+          if (!saved) return {
+            theme: "dark",
+            customColors: { ...DEFAULT_CUSTOM_COLORS }
+          };
+
+          const parsed = JSON.parse(saved);
+          const theme = VALID_THEMES.includes(parsed?.theme) ? parsed.theme : "dark";
+          const savedColors = parsed?.customColors || {};
+          const customColors = Object.fromEntries(
+            Object.entries(DEFAULT_CUSTOM_COLORS).map(([key, fallback]) => [
+              key,
+              typeof savedColors[key] === "string" && /^#[\da-f]{6}$/i.test(savedColors[key])
+                ? savedColors[key]
+                : fallback
+            ])
+          );
+          return {
+            ...(parsed && typeof parsed === "object" ? parsed : {}),
+            theme,
+            customColors
+          };
+        } catch (error) {
+          console.error("Не удалось загрузить настройки темы.", error);
+          return {
+            theme: "dark",
+            customColors: { ...DEFAULT_CUSTOM_COLORS }
+          };
+        }
+      }
+
+      function saveSettings() {
+        try {
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+        } catch (error) {
+          console.error("Не удалось сохранить настройки темы.", error);
+          alert("Не удалось сохранить настройки. Проверьте свободное место на устройстве.");
+        }
+      }
+
+      function applyTheme(theme) {
+        document.body.dataset.theme = theme;
+        Object.entries(settings.customColors).forEach(([key, value]) => {
+          const property = key === "elevated" ? "--custom-bg-elevated" : `--custom-${key}`;
+          document.documentElement.style.setProperty(property, value);
+        });
+        document.documentElement.style.setProperty(
+          "--custom-bg-input",
+          settings.customColors.elevated
+        );
+        themeButtons.forEach((button) => {
+          const active = button.dataset.themeValue === theme;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        customThemePanel.hidden = theme !== "custom";
+      }
+
+      function selectTheme(theme) {
+        if (!VALID_THEMES.includes(theme)) return;
+        settings.theme = theme;
+        applyTheme(theme);
+        saveSettings();
+      }
+
+      Object.entries(customColorInputs).forEach(([key, input]) => {
+        input.value = settings.customColors[key];
+        input.addEventListener("input", () => {
+          settings.customColors[key] = input.value;
+          selectTheme("custom");
+        });
+      });
+
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          selectTheme(button.dataset.themeValue);
+        });
+      });
+      applyTheme(settings.theme);
+
+      function loadTitles() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (!saved) return [];
+          const parsed = JSON.parse(saved);
+          return Array.isArray(parsed) ? parsed.filter(isValidTitle).map(normalizeTitle) : [];
+        } catch (error) {
+          console.error("Не удалось загрузить список из localStorage.", error);
+          return [];
+        }
+      }
+
+      function normalizeTitle(item) {
+        const { progressTotal, progressCurrent, ...title } = item;
+        const hasLegacyAnimeProgress = item.type === "anime" &&
+          Number.isInteger(progressCurrent) && progressCurrent > 0;
+        return {
+          ...title,
+          comment: item.comment === undefined ? "" : item.comment,
+          episodesTotal: item.episodesTotal ?? progressTotal ?? null,
+          progressSeason: item.progressSeason ?? (hasLegacyAnimeProgress ? 1 : null),
+          progressEpisode: item.progressEpisode ?? (hasLegacyAnimeProgress ? progressCurrent : null)
+        };
+      }
+
+      function isValidTitle(item) {
+        return item && typeof item.id === "string" &&
+          typeof item.name === "string" && item.name.trim() &&
+          Object.hasOwn(types, item.type) && Object.hasOwn(statuses, item.status) &&
+          (item.year === null || (Number.isInteger(item.year) && item.year >= 1888 && item.year <= 2100)) &&
+          (item.rating === null || (Number.isInteger(item.rating) && item.rating >= 1 && item.rating <= 10)) &&
+          (item.progressCurrent === undefined || item.progressCurrent === null || Number.isInteger(item.progressCurrent)) &&
+          (item.episodesTotal === undefined || item.episodesTotal === null || Number.isInteger(item.episodesTotal)) &&
+          (item.animeSeasons === undefined || item.animeSeasons === null ||
+            (Number.isInteger(item.animeSeasons) && item.animeSeasons >= 1)) &&
+          (item.progressTotal === undefined || item.progressTotal === null || Number.isInteger(item.progressTotal)) &&
+          (item.progressSeason === undefined || item.progressSeason === null ||
+            (Number.isInteger(item.progressSeason) && item.progressSeason >= 1)) &&
+          (item.progressEpisode === undefined || item.progressEpisode === null ||
+            (Number.isInteger(item.progressEpisode) && item.progressEpisode >= 1)) &&
+          (item.totalSeasons === undefined || item.totalSeasons === null ||
+            (Number.isInteger(item.totalSeasons) && item.totalSeasons >= 0)) &&
+          (item.totalEpisodes === undefined || item.totalEpisodes === null ||
+            (Number.isInteger(item.totalEpisodes) && item.totalEpisodes >= 0)) &&
+          (item.seriesStatus === undefined || item.seriesStatus === null || typeof item.seriesStatus === "string") &&
+          (item.tmdbId === undefined || item.tmdbId === null || Number.isInteger(item.tmdbId)) &&
+          (item.anilistId === undefined || item.anilistId === null || Number.isInteger(item.anilistId)) &&
+          (item.animeGenres === undefined || item.animeGenres === null || typeof item.animeGenres === "string") &&
+          (item.animeRating === undefined || item.animeRating === null ||
+            (typeof item.animeRating === "number" && Number.isFinite(item.animeRating) &&
+              item.animeRating >= 0 && item.animeRating <= 10)) &&
+          (item.animeDuration === undefined || item.animeDuration === null ||
+            (Number.isInteger(item.animeDuration) && item.animeDuration > 0)) &&
+          (item.animeStatus === undefined || item.animeStatus === null || typeof item.animeStatus === "string") &&
+          (item.titleRu === undefined || item.titleRu === null || typeof item.titleRu === "string") &&
+          (item.genres === undefined || item.genres === null || typeof item.genres === "string") &&
+          (item.tmdbRating === undefined || item.tmdbRating === null ||
+            (typeof item.tmdbRating === "number" && Number.isFinite(item.tmdbRating) &&
+              item.tmdbRating >= 0 && item.tmdbRating <= 10)) &&
+          (item.runtime === undefined || item.runtime === null ||
+            (Number.isInteger(item.runtime) && item.runtime > 0)) &&
+          (item.coverUrl === undefined || item.coverUrl === null ||
+            (typeof item.coverUrl === "string" && (!item.coverUrl || /^https?:\/\//i.test(item.coverUrl)))) &&
+          (item.comment === undefined || item.comment === null || typeof item.comment === "string") &&
+          (item.watchedAt === null || (typeof item.watchedAt === "string" && !Number.isNaN(Date.parse(item.watchedAt))));
+      }
+
+      function saveTitles() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(titles));
+        } catch (error) {
+          console.error("Не удалось сохранить список в localStorage.", error);
+          alert("Не удалось сохранить изменения. Проверьте свободное место на устройстве.");
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (character) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]);
+      }
+
+      function renderList() {
+        const query = searchInput.value.trim().toLocaleLowerCase("ru");
+        const selectedType = typeFilter.value;
+        const selectedStatus = statusFilter.value;
+        const visibleTitles = titles
+          .filter((title) => selectedType === "all" || title.type === selectedType)
+          .filter((title) => selectedStatus === "all" || title.status === selectedStatus)
+          .filter((title) => title.name.toLocaleLowerCase("ru").includes(query))
+          .sort((a, b) => b.createdAt - a.createdAt);
+
+        listCount.textContent = titles.length
+          ? `${visibleTitles.length} из ${titles.length} ${pluralize(titles.length, ["тайтл", "тайтла", "тайтлов"])}`
+          : "Пока пусто — самое время начать";
+
+        if (!visibleTitles.length) {
+          const hasFilters = query || selectedType !== "all" || selectedStatus !== "all";
+          titleList.innerHTML = `<div class="empty-state"><strong>${hasFilters ? "Ничего не нашлось" : "Твоя коллекция начинается здесь"}</strong>${hasFilters ? "Попробуй изменить запрос или фильтры." : "Добавь фильм, сериал или аниме — и всё будет под рукой."}</div>`;
+          return;
+        }
+
+        titleList.innerHTML = visibleTitles.map((title) => {
+          const type = types[title.type];
+          const status = statuses[title.status];
+          const episodesTotal = title.episodesTotal ?? null;
+          const progressSeason = title.progressSeason ?? null;
+          const progressEpisode = title.progressEpisode ?? null;
+          const totalSeasons = title.totalSeasons ?? null;
+          const totalEpisodes = title.totalEpisodes ?? null;
+          const progressTotal = title.type === "anime" ? episodesTotal : totalEpisodes;
+          const hasProgress = progressSeason !== null || progressEpisode !== null;
+          const progressSummary = hasProgress
+            ? `<span class="progress-summary${progressEpisode !== null && progressEpisode === progressTotal ? " is-complete" : ""}">${progressSeason !== null ? `Сезон ${progressSeason}` : ""}${progressSeason !== null && progressEpisode !== null ? " × " : ""}${progressEpisode !== null ? `Серия ${progressEpisode}` : ""}${progressTotal !== null ? ` из ${progressTotal}` : ""}</span>`
+            : "";
+          const titleRu = title.titleRu && title.titleRu.trim().toLocaleLowerCase("ru") !== title.name.trim().toLocaleLowerCase("ru")
+            ? title.titleRu.trim()
+            : "";
+          const runtimeText = title.runtime ? formatRuntime(title.runtime) : "";
+          const movieDetails = title.type === "movie"
+            ? [
+              title.year ?? "",
+              runtimeText,
+              title.genres || "",
+              title.tmdbRating == null
+                ? ""
+                : runtimeText
+                  ? title.tmdbRating.toFixed(1)
+                  : `IMDb ${title.tmdbRating.toFixed(1)}`
+            ].filter(Boolean).map(escapeHtml).join(" · ")
+            : "";
+          const seriesDetails = title.type === "series"
+            ? hasProgress
+              ? progressSummary
+              : totalSeasons !== null || totalEpisodes !== null
+                ? [
+                  totalSeasons === null ? "" : `${totalSeasons} ${pluralize(totalSeasons, ["сезон", "сезона", "сезонов"])}`,
+                  totalEpisodes === null ? "" : `${totalEpisodes} ${pluralize(totalEpisodes, ["серия", "серии", "серий"])}`
+                ].filter(Boolean).map(escapeHtml).join(", ")
+                : title.year === null ? "" : escapeHtml(title.year)
+            : "";
+          const animeDetails = title.type === "anime"
+            ? hasProgress
+              ? [
+                title.animeSeasons == null
+                  ? ""
+                  : `${title.animeSeasons} ${pluralize(title.animeSeasons, ["сезон", "сезона", "сезонов"])}`,
+                progressSummary,
+                title.animeGenres || "",
+                title.animeRating == null ? "" : `AniList ${title.animeRating.toFixed(1)}`,
+                title.animeDuration ? `${formatRuntime(title.animeDuration)} на серию` : ""
+              ].filter(Boolean).map(escapeHtml).join(" · ")
+              : episodesTotal === null
+                ? [
+                  title.animeGenres || "",
+                  title.animeRating == null ? "" : `AniList ${title.animeRating.toFixed(1)}`,
+                  title.animeDuration ? `${formatRuntime(title.animeDuration)} на серию` : ""
+                ]
+                  .filter(Boolean).map(escapeHtml).join(" · ")
+                : [
+                  title.animeSeasons == null
+                    ? ""
+                    : `${title.animeSeasons} ${pluralize(title.animeSeasons, ["сезон", "сезона", "сезонов"])}`,
+                  `${episodesTotal} ${pluralize(episodesTotal, ["серия", "серии", "серий"])}`,
+                  title.animeGenres || "",
+                  title.animeRating == null ? "" : `AniList ${title.animeRating.toFixed(1)}`,
+                  title.animeDuration ? `${formatRuntime(title.animeDuration)} на серию` : ""
+                ].filter(Boolean).map(escapeHtml).join(" · ")
+            : "";
+          const details = title.type === "anime"
+            ? animeDetails
+            : title.type === "series" ? seriesDetails : movieDetails;
+          const distinctMovieTitle = title.type !== "anime" && titleRu
+            ? `<p class="movie-meta-title">${escapeHtml(titleRu)}</p>`
+            : "";
+          const comment = typeof title.comment === "string" ? title.comment.trim() : "";
+          const itemComment = comment
+            ? `<p class="item-comment">«${escapeHtml(comment)}»</p>`
+            : "";
+          const watchedDate = title.watchedAt
+            ? `<p class="watched-date">Просмотрено ${new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(new Date(title.watchedAt))}</p>`
+            : "";
+          const cover = title.coverUrl
+            ? `<img src="${escapeHtml(title.coverUrl)}" alt="" loading="lazy" data-fallback="${type.emoji}">`
+            : `<span class="type-emoji cover-placeholder" aria-hidden="true">${type.emoji}</span>`;
+          return `
+            <article class="title-card">
+              <div class="card-heading">
+                <div class="title-main">
+                  <div class="cover-art">${cover}</div>
+                  <div>
+                    <h3 class="title-name">${escapeHtml(title.name)}</h3>
+                    ${details ? `<p class="title-year">${details}</p>` : ""}
+                    ${distinctMovieTitle}
+                    ${itemComment}
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <button class="card-action" type="button" data-edit="${escapeHtml(title.id)}" aria-label="Редактировать ${escapeHtml(title.name)}">✎</button>
+                  <button class="card-action" type="button" data-delete="${escapeHtml(title.id)}" aria-label="Удалить ${escapeHtml(title.name)}">×</button>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span class="status-badge ${status.className}">${status.label}</span>
+                ${title.rating ? `<span class="rating" aria-label="Оценка ${title.rating} из 10">★ ${title.rating}/10</span>` : ""}
+              </div>
+              ${watchedDate}
+            </article>`;
+        }).join("");
+      }
+
+      function pluralize(count, forms) {
+        const remainder100 = count % 100;
+        const remainder10 = count % 10;
+        if (remainder100 >= 11 && remainder100 <= 14) return forms[2];
+        if (remainder10 === 1) return forms[0];
+        if (remainder10 >= 2 && remainder10 <= 4) return forms[1];
+        return forms[2];
+      }
+
+      function renderStats() {
+        const ratedTitles = titles.filter((title) => title.rating !== null);
+        const average = ratedTitles.length
+          ? (ratedTitles.reduce((sum, title) => sum + title.rating, 0) / ratedTitles.length).toFixed(1)
+          : "—";
+        const typeCounts = Object.keys(types).map((type) => ({
+          type,
+          count: titles.filter((title) => title.type === type).length
+        }));
+        const topTitles = [...ratedTitles]
+          .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name, "ru"))
+          .slice(0, 5);
+
+        statsContent.innerHTML = `
+          <div class="stats-grid">
+            <article class="stat-card"><p>Всего тайтлов</p><strong>${titles.length}</strong></article>
+            <article class="stat-card"><p>Средняя оценка</p><strong>${average}${average === "—" ? "" : " ★"}</strong></article>
+          </div>
+          <section class="stats-panel">
+            <h3>По типам</h3>
+            <ul class="type-stat-list">
+              ${typeCounts.map(({ type, count }) => `<li class="type-stat"><span>${types[type].emoji} ${types[type].label}</span><strong>${count}</strong></li>`).join("")}
+            </ul>
+          </section>
+          <section class="stats-panel">
+            <h3>Топ-5 по оценке</h3>
+            ${topTitles.length ? `<ol class="top-list">${topTitles.map((title, index) => `<li class="top-item"><span class="top-rank">${index + 1}</span><span class="top-title">${escapeHtml(title.name)}</span><span class="rating">★ ${title.rating}</span></li>`).join("")}</ol>` : '<p class="muted">Поставь оценку тайтлу, чтобы он попал в рейтинг.</p>'}
+          </section>`;
+      }
+
+      function calculateXP(items, achievementRecords = getAchievements()) {
+        const breakdown = Object.fromEntries(
+          Object.keys(XP_PER_STATUS).map((status) => [status, { count: 0, xp: 0 }])
+        );
+        let itemsXP = 0;
+
+        items.forEach((item) => {
+          const xp = XP_PER_STATUS[item.status] ?? 0;
+          itemsXP += xp;
+          if (breakdown[item.status]) {
+            breakdown[item.status].count += 1;
+            breakdown[item.status].xp += xp;
+          }
+        });
+
+        let achievementsXP = 0;
+        const achievementsList = [];
+        achievementRecords.forEach((achievement) => {
+          const meta = ACHIEVEMENTS.find((item) => item.id === achievement.id);
+          if (!meta) return;
+          const xp = Number.isFinite(achievement.xp) ? achievement.xp : meta.xp;
+          achievementsXP += xp;
+          achievementsList.push({ ...meta, xp, unlockedAt: achievement.unlockedAt });
+        });
+
+        return {
+          totalXP: Math.max(0, itemsXP + achievementsXP),
+          itemsXP,
+          achievementsXP,
+          breakdown,
+          achievementsList
+        };
+      }
+
+      function getLevel(xp) {
+        let level = 1;
+        while (xp >= 50 * level * (level + 1) / 2) {
+          level += 1;
+        }
+        return level;
+      }
+
+      function getAchievements() {
+        try {
+          const saved = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
+          if (!saved) return [];
+          const parsed = JSON.parse(saved);
+          if (!Array.isArray(parsed)) return [];
+          let needsMigration = false;
+          const records = parsed
+            .map((entry) => {
+              if (typeof entry === "string") {
+                needsMigration = true;
+                return { id: entry, unlockedAt: Date.now() };
+              }
+              return entry;
+            })
+            .filter((entry) => entry &&
+              ACHIEVEMENTS.some((achievement) => achievement.id === entry.id) &&
+              Number.isFinite(entry.unlockedAt))
+            .map((entry) => {
+              const meta = ACHIEVEMENTS.find((achievement) => achievement.id === entry.id);
+              if (!Number.isFinite(entry.xp)) {
+                needsMigration = true;
+                return { ...entry, xp: meta.xp };
+              }
+              return { id: entry.id, unlockedAt: entry.unlockedAt, xp: entry.xp };
+            });
+          const uniqueRecords = [...new Map(records.map((entry) => [entry.id, entry])).values()];
+          if (needsMigration || uniqueRecords.length !== records.length) {
+            saveAchievements(uniqueRecords);
+          }
+          return uniqueRecords;
+        } catch (error) {
+          console.error("Не удалось загрузить достижения.", error);
+          return [];
+        }
+      }
+
+      function saveAchievements(list) {
+        try {
+          localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(list));
+        } catch (error) {
+          console.error("Не удалось сохранить достижения.", error);
+          alert("Не удалось сохранить достижения. Проверьте свободное место на устройстве.");
+        }
+      }
+
+      function isUnlocked(id, achievements = getAchievements()) {
+        return achievements.some((achievement) => achievement.id === id);
+      }
+
+      function showAchievementToast(achievement) {
+        achievementToastQueue.push(achievement);
+        if (!achievementToastActive) showNextAchievementToast();
+      }
+
+      function showNextAchievementToast() {
+        if (!achievementToastQueue.length) {
+          achievementToastActive = false;
+          return;
+        }
+
+        achievementToastActive = true;
+        const achievement = achievementToastQueue.shift();
+        const toast = document.createElement("div");
+        toast.className = "achievement-toast";
+        toast.setAttribute("role", "status");
+        const icon = document.createElement("div");
+        icon.className = "toast-icon";
+        icon.textContent = achievement.icon;
+        const body = document.createElement("div");
+        body.className = "toast-body";
+        const title = document.createElement("div");
+        title.className = "toast-title";
+        title.textContent = "Новая ачивка!";
+        const name = document.createElement("div");
+        name.className = "toast-name";
+        name.textContent = achievement.title;
+        const xp = document.createElement("div");
+        xp.className = "toast-xp";
+        xp.textContent = `+${achievement.xp} XP`;
+        body.append(title, name, xp);
+        toast.append(icon, body);
+        document.body.append(toast);
+        window.setTimeout(() => toast.classList.add("show"), 50);
+        achievementToastTimer = window.setTimeout(() => {
+          toast.classList.remove("show");
+          window.setTimeout(() => {
+            toast.remove();
+            achievementToastTimer = window.setTimeout(showNextAchievementToast, 500);
+          }, 400);
+        }, 3000);
+      }
+
+      function checkAchievements() {
+        const achievements = getAchievements();
+        const unlockedIds = new Set(achievements.map((achievement) => achievement.id));
+        let hasNewAchievements = false;
+        let newlyUnlocked;
+        do {
+          const { totalXP } = calculateXP(titles, achievements);
+          const stats = {
+            ratedCount: titles.filter((item) => item.rating != null).length,
+            watchedCount: titles.filter((item) => item.status === "watched").length,
+            watchingCount: titles.filter((item) => item.status === "watching").length,
+            level: getLevel(totalXP)
+          };
+          newlyUnlocked = ACHIEVEMENTS.filter((achievement) =>
+            !unlockedIds.has(achievement.id) && achievement.check(stats)
+          );
+          newlyUnlocked.forEach((achievement) => {
+            unlockedIds.add(achievement.id);
+            achievements.push({ id: achievement.id, unlockedAt: Date.now(), xp: achievement.xp });
+            showAchievementToast(achievement);
+          });
+          hasNewAchievements ||= newlyUnlocked.length > 0;
+        } while (newlyUnlocked.length);
+        if (hasNewAchievements) saveAchievements(achievements);
+        return achievements;
+      }
+
+      function renderProfile() {
+        const { totalXP, achievementsXP, breakdown } = calculateXP(titles);
+        const unlockedCount = getAchievements().filter((achievement) =>
+          ACHIEVEMENTS.some((meta) => meta.id === achievement.id)
+        ).length;
+        const level = getLevel(totalXP);
+        const currentLevelXP = 50 * (level - 1) * level / 2;
+        const nextLevelXP = 50 * level * (level + 1) / 2;
+        const progressPercent = ((totalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+        const countFor = (status) => breakdown[status].count;
+        const formatXP = (xp) => `${xp < 0 ? "−" : "+"}${Math.abs(xp)} XP`;
+        const xpRows = ["watched", "watching", "wanted", "dropped"]
+          .map((status) => `
+            <div class="xp-row${status === "dropped" ? " xp-negative" : ""}">
+              <span>${statuses[status].label} (${breakdown[status].count})</span>
+              <span>${formatXP(breakdown[status].xp)}</span>
+            </div>`)
+            .join("");
+
+        profileLevel.textContent = `Уровень ${level}`;
+        profileContent.innerHTML = `
+          <div class="xp-bar-wrapper">
+            <div class="xp-bar" role="progressbar" aria-label="Опыт до следующего уровня"
+              aria-valuemin="${currentLevelXP}" aria-valuemax="${nextLevelXP}" aria-valuenow="${totalXP}">
+              <div class="xp-bar-fill" style="width: ${progressPercent.toFixed(2)}%"></div>
+            </div>
+            <div class="xp-bar-info">
+              <span>${totalXP} XP</span>
+              <span>${nextLevelXP} XP</span>
+            </div>
+            <p class="xp-to-next">До следующего уровня: ${nextLevelXP - totalXP} XP</p>
+          </div>
+          <div class="profile-stats-grid">
+            <div class="profile-stat-card"><div class="profile-stat-value">${titles.length}</div><div class="profile-stat-label">Всего</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-value">${countFor("watching")}</div><div class="profile-stat-label">Смотрю</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-value">${countFor("watched")}</div><div class="profile-stat-label">Просмотрено</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-value">${countFor("dropped")}</div><div class="profile-stat-label">Брошено</div></div>
+          </div>
+          <div class="xp-breakdown">
+            <h3>Откуда опыт</h3>
+            ${xpRows}
+            <div class="xp-row"><span>Ачивки</span><span>${formatXP(achievementsXP)}</span></div>
+            <div class="xp-row xp-total"><span>Итого</span><span>${totalXP} XP</span></div>
+          </div>
+          <button class="profile-achievements-btn" id="profile-achievements-btn" type="button" data-view="achievements">
+            <span>🏆 Достижения</span>
+            <span class="ach-count">${unlockedCount} / ${ACHIEVEMENTS.length}</span>
+          </button>`;
+        profileContent.insertAdjacentHTML("beforeend", `
+          <button class="profile-statistics-btn" id="open-statistics" type="button">
+            <span>📊 Статистика</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>`);
+      }
+
+      function renderAchievements() {
+        const achievements = getAchievements();
+        const unlockedIds = new Set(achievements.map((achievement) => achievement.id));
+        const unlockedCount = ACHIEVEMENTS.filter((achievement) => unlockedIds.has(achievement.id)).length;
+        const progressPercent = unlockedCount / ACHIEVEMENTS.length * 100;
+        const visibleAchievements = ACHIEVEMENTS.filter((achievement) => {
+          const unlocked = unlockedIds.has(achievement.id);
+          return achievementFilter === "all" ||
+            (achievementFilter === "unlocked" && unlocked) ||
+            (achievementFilter === "locked" && !unlocked);
+        });
+
+        achievementsCounter.textContent = `${unlockedCount} / ${ACHIEVEMENTS.length}`;
+        achievementsProgress.setAttribute("aria-valuenow", String(unlockedCount));
+        achievementsProgressFill.style.width = `${progressPercent.toFixed(2)}%`;
+        achievementsList.innerHTML = visibleAchievements.map((achievement) => {
+          const unlocked = unlockedIds.has(achievement.id);
+          return `
+            <article class="achievement-card ${unlocked ? "unlocked" : "locked"}" data-id="${achievement.id}">
+              <div class="ach-icon">${unlocked ? achievement.icon : "🔒"}</div>
+              <div class="ach-title">${escapeHtml(achievement.title)}</div>
+              <div class="ach-desc">${escapeHtml(achievement.desc)}</div>
+              <div class="ach-xp">+${achievement.xp} XP</div>
+            </article>`;
+        }).join("");
+      }
+
+      function renderPopularSkeletons() {
+        popularGrid.innerHTML = Array.from({ length: 6 }, () =>
+          '<div class="popular-skeleton" aria-hidden="true"></div>'
+        ).join("");
+      }
+
+      function renderPopularItems(items, type) {
+        popularItems = items;
+        if (!items.length) {
+          popularGrid.innerHTML = '<div class="empty-state">Не удалось загрузить популярные тайтлы.</div>';
+          return;
+        }
+
+        const fallbackEmoji = types[type].emoji;
+        popularGrid.innerHTML = items.map((item, index) => {
+          const title = escapeHtml(item.titleRu || "Без названия");
+          const meta = [
+            item.year ?? "",
+            type === "anime" && item.episodes
+              ? `${item.episodes} ${pluralize(item.episodes, ["серия", "серии", "серий"])}`
+              : ""
+          ].filter(Boolean).map(escapeHtml).join(" · ");
+          const poster = item.coverUrl
+            ? `<img src="${escapeHtml(item.coverUrl)}" alt="" loading="lazy" data-fallback="${fallbackEmoji}">`
+            : `<span class="popular-poster-placeholder" aria-hidden="true">${fallbackEmoji}</span>`;
+          return `
+            <article class="popular-card" data-index="${index}" tabindex="0" role="button"
+              aria-label="Добавить ${title}">
+              ${poster}
+              ${item.rating == null ? "" : `<span class="popular-card-rating">★ ${escapeHtml(item.rating)}</span>`}
+              <div class="popular-card-info">
+                <div class="popular-card-title">${title}</div>
+                <div class="popular-card-meta">${meta || "&nbsp;"}</div>
+              </div>
+            </article>`;
+        }).join("");
+      }
+
+      async function loadPopular(type = activePopularType, refresh = false) {
+        if (refresh) {
+          Object.keys(popularCache).forEach((cachedType) => {
+            popularControllers[cachedType]?.abort();
+            popularControllers[cachedType] = null;
+            popularCache[cachedType] = null;
+          });
+        }
+        if (popularCache[type]) {
+          if (type === activePopularType) renderPopularItems(popularCache[type], type);
+          return;
+        }
+
+        const requestId = ++popularRequestId;
+        const controller = new AbortController();
+        popularControllers[type] = controller;
+        if (type === activePopularType) renderPopularSkeletons();
+        const items = await popularFetchers[type](controller.signal);
+        if (controller.signal.aborted) return;
+        popularCache[type] = items;
+        if (popularControllers[type] === controller) popularControllers[type] = null;
+        if (requestId === popularRequestId && type === activePopularType) {
+          renderPopularItems(items, type);
+        }
+      }
+
+      function cancelPrefillDetails() {
+        if (prefillRequestController) {
+          prefillRequestController.abort();
+          prefillRequestController = null;
+        }
+        prefillRequestId += 1;
+        prefillDetailsPromise = null;
+      }
+
+      function openAddFormWithPrefill(prefill) {
+        cancelPrefillDetails();
+        openForm();
+        editingId = null;
+        document.querySelector("#dialog-title").textContent = "Новый тайтл";
+        typeInput.value = prefill.type;
+        nameInput.value = prefill.title || "";
+        yearInput.value = prefill.year ?? "";
+        statusInput.value = "wanted";
+        ratingInput.value = "";
+        progressSeasonInput.value = "";
+        progressEpisodeInput.value = "";
+        hideAnimeSuggestions();
+        movieMetaTitle.hidden = true;
+        movieMetaTitle.textContent = "";
+        selectedMovieMeta = null;
+        selectedAnimeMeta = null;
+        updateProgressControls();
+
+        const query = nameInput.value.trim().toLocaleLowerCase("ru");
+        if (prefill.type === "anime") {
+          selectedAnimeMeta = {
+            coverUrl: prefill.coverUrl || null,
+            episodes: prefill.episodes ?? null,
+            seasons: null,
+            year: prefill.year ?? null,
+            status: null,
+            rusName: null,
+            anilistId: prefill.anilistId ?? null,
+            genres: null,
+            rating: null,
+            duration: null
+          };
+          updateProgressInfo(selectedAnimeMeta);
+          updateMovieInfo(null);
+        } else {
+          selectedMovieMeta = {
+            coverUrl: prefill.coverUrl || null,
+            year: prefill.year ?? null,
+            titleRu: prefill.title || null,
+            tmdbId: prefill.tmdbId ?? null,
+            genres: null,
+            tmdbRating: null,
+            runtime: null,
+            totalSeasons: null,
+            totalEpisodes: null,
+            seriesStatus: null,
+            detailLoaded: !prefill.tmdbId,
+            query,
+            queryType: prefill.type
+          };
+          updateProgressInfo(selectedMovieMeta);
+          updateMovieInfo(null);
+        }
+
+        const hasDetailsId = prefill.type === "anime"
+          ? Boolean(prefill.anilistId)
+          : Boolean(prefill.tmdbId);
+        const initialCover = prefill.coverUrl || null;
+        setAnimeCoverPreview(initialCover, hasDetailsId ? "loading-cover" : initialCover ? "loaded" : "empty");
+        nameInput.focus();
+        if (!hasDetailsId) return;
+
+        const requestId = ++prefillRequestId;
+        const controller = new AbortController();
+        prefillRequestController = controller;
+        const initialYear = yearInput.value;
+        prefillDetailsPromise = (async () => {
+          const details = prefill.type === "anime"
+            ? await fetchAnimeDetails(prefill.anilistId, controller.signal)
+            : prefill.type === "movie"
+              ? await fetchPopularMovieDetails(prefill.tmdbId, controller.signal)
+              : await fetchPopularSeriesDetails(prefill.tmdbId, controller.signal);
+
+          if (requestId !== prefillRequestId || controller.signal.aborted || !dialog.open) return;
+          if (prefill.type === "anime") {
+            if (details) {
+              selectedAnimeMeta = {
+                ...selectedAnimeMeta,
+                ...details,
+                coverUrl: details.coverUrl || initialCover,
+                episodes: details.episodes ?? selectedAnimeMeta.episodes,
+                seasons: details.seasons ?? selectedAnimeMeta.seasons
+              };
+              if (details.year != null && yearInput.value === initialYear) {
+                yearInput.value = details.year;
+              }
+              updateProgressInfo(selectedAnimeMeta);
+              setAnimeCoverPreview(selectedAnimeMeta.coverUrl, selectedAnimeMeta.coverUrl ? "loaded" : "error");
+            } else {
+              setAnimeCoverPreview(initialCover, initialCover ? "loaded" : "error");
+            }
+            return;
+          }
+
+          if (details) {
+            const merged = { ...selectedMovieMeta, ...details, coverUrl: details.coverUrl || initialCover };
+            selectedMovieMeta = merged;
+            if (details.year != null && yearInput.value === initialYear) yearInput.value = details.year;
+            applyMovieMeta(merged, query, prefill.type);
+          } else {
+            selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+            setAnimeCoverPreview(initialCover, initialCover ? "loaded" : "error");
+          }
+        })().finally(() => {
+          if (requestId === prefillRequestId) {
+            prefillRequestController = null;
+            prefillDetailsPromise = null;
+          }
+        });
+      }
+
+      function setNavActive(view) {
+        const navView = view === "achievements" || view === "stats" ? "profile" : view;
+        document.querySelectorAll(".nav-button").forEach((navButton) => {
+          const active = view === "add"
+            ? navButton.dataset.action === "add"
+            : navButton.dataset.view === navView;
+          navButton.classList.toggle("active", active);
+          if (active) navButton.setAttribute("aria-current", "page");
+          else navButton.removeAttribute("aria-current");
+        });
+      }
+
+      function showView(view) {
+        currentView = view;
+        listView.hidden = view !== "list";
+        popularView.hidden = view !== "popular";
+        statsView.hidden = view !== "stats";
+        profileView.hidden = view !== "profile";
+        achievementsScreen.hidden = view !== "achievements";
+        settingsView.hidden = view !== "settings";
+        if (view === "profile" || view === "achievements") checkAchievements();
+        if (view === "profile") renderProfile();
+        if (view === "achievements") renderAchievements();
+        if (view === "popular") loadPopular(activePopularType);
+        setNavActive(view);
+      }
+
+      function render() {
+        renderList();
+        renderStats();
+        checkAchievements();
+        renderProfile();
+        renderAchievements();
+      }
+
+      function openForm(title = null) {
+        cancelPrefillDetails();
+        cancelAnimeCoverLookup();
+        cancelMovieMetaLookup();
+        cancelAnimeSearchLookup();
+        cancelMovieSearchLookup();
+        yearManuallyEdited = false;
+        editingId = title ? title.id : null;
+        form.reset();
+        hideAnimeSuggestions();
+        document.querySelector("#dialog-title").textContent = title ? "Редактировать тайтл" : "Новый тайтл";
+        nameInput.value = title ? title.name : "";
+        typeInput.value = title ? title.type : "movie";
+        yearInput.value = title && title.year !== null ? title.year : "";
+        statusInput.value = title ? title.status : "wanted";
+        ratingInput.value = title && title.rating !== null ? title.rating : "";
+        commentInput.value = title && typeof title.comment === "string" ? title.comment : "";
+        progressSeasonInput.value = title && title.progressSeason != null ? title.progressSeason : "";
+        progressEpisodeInput.value = title && title.progressEpisode != null ? title.progressEpisode : "";
+        selectedAnimeMeta = title && title.type === "anime"
+          ? {
+            coverUrl: title.coverUrl || null,
+            episodes: title.episodesTotal ?? null,
+            seasons: title.animeSeasons ?? null,
+            year: title.year ?? null,
+            status: null,
+            rusName: title.rusName ?? null
+          }
+          : null;
+        if (selectedAnimeMeta) {
+          animeCoverCache[nameInput.value.trim().toLocaleLowerCase("ru")] = selectedAnimeMeta;
+        }
+        selectedMovieMeta = title && (title.type === "movie" || title.type === "series")
+          ? {
+            coverUrl: title.coverUrl || null,
+            year: title.year ?? null,
+            titleRu: title.titleRu ?? null,
+            tmdbId: title.tmdbId ?? null,
+            genres: title.genres ?? null,
+            tmdbRating: title.tmdbRating ?? null,
+            runtime: title.runtime ?? null,
+            totalSeasons: title.totalSeasons ?? null,
+            totalEpisodes: title.totalEpisodes ?? null,
+            seriesStatus: title.seriesStatus ?? null,
+            detailLoaded: true,
+            query: title.name.trim().toLocaleLowerCase("ru"),
+            queryType: title.type
+          }
+          : null;
+        updateProgressControls();
+        updateProgressInfo(typeInput.value === "anime" ? selectedAnimeMeta : selectedMovieMeta);
+        updateMovieInfo(selectedMovieMeta);
+        updateTitleCoverPreview();
+        dialog.showModal();
+        nameInput.focus();
+      }
+
+      function closeForm() {
+        cancelPrefillDetails();
+        cancelAnimeCoverLookup();
+        cancelMovieMetaLookup();
+        cancelAnimeSearchLookup();
+        cancelMovieSearchLookup();
+        hideAnimeSuggestions();
+        dialog.close();
+        editingId = null;
+        setNavActive(currentView);
+      }
+
+      function updateProgressControls() {
+        const isAnime = typeInput.value === "anime";
+        const isSeries = typeInput.value === "series";
+        progressControl.hidden = !isAnime && !isSeries;
+      }
+
+      function updateProgressInfo(meta) {
+        if (typeInput.value === "anime") {
+          updateAnimeInfo(meta);
+          return;
+        }
+
+        if (typeInput.value !== "series") {
+          animeInfoText.textContent = "—";
+          animeInfo.dataset.state = "empty";
+          return;
+        }
+
+        const totalEpisodes = meta?.totalEpisodes ?? null;
+        const totalSeasons = meta?.totalSeasons ?? null;
+        let text = "";
+        if (totalEpisodes !== null) {
+          const totals = [
+            totalSeasons === null
+              ? ""
+              : `${totalSeasons} ${pluralize(totalSeasons, ["сезон", "сезона", "сезонов"])}`,
+            `${totalEpisodes} ${pluralize(totalEpisodes, ["серия", "серии", "серий"])}`
+          ].filter(Boolean).join(", ");
+          const prefix = meta?.seriesStatus === "Returning Series"
+            ? "Выходит, вышло"
+            : "Всего";
+          text = `${prefix}: ${totals}`;
+        } else {
+          text = "Число серий неизвестно";
+        }
+
+        const metadata = [
+          meta?.genres ? `Жанры: ${meta.genres}` : "",
+          meta?.tmdbRating == null ? "" : `TMDB ${meta.tmdbRating.toFixed(1)}`
+        ].filter(Boolean);
+        const info = [text, ...metadata].filter(Boolean).join(" · ");
+        animeInfoText.textContent = info || "—";
+        animeInfo.dataset.state = info ? "loaded" : "empty";
+      }
+
+      function formatRuntime(minutes) {
+        if (!minutes) return null;
+        const hours = Math.floor(minutes / 60);
+        const remainder = minutes % 60;
+        if (hours === 0) return `${remainder} мин`;
+        if (remainder === 0) return `${hours} ч`;
+        return `${hours} ч ${remainder} мин`;
+      }
+
+      function updateMovieInfo(metaOrRuntime) {
+        const isMovie = typeInput.value === "movie";
+        movieInfo.hidden = !isMovie;
+        const meta = metaOrRuntime && typeof metaOrRuntime === "object" ? metaOrRuntime : null;
+        const runtime = typeof metaOrRuntime === "number" ? metaOrRuntime : meta?.runtime;
+        const details = [
+          runtime ? `Продолжительность: ${formatRuntime(runtime)}` : "",
+          meta?.genres ? `Жанры: ${meta.genres}` : "",
+          meta?.tmdbRating == null ? "" : `TMDB ${meta.tmdbRating.toFixed(1)}`
+        ].filter(Boolean);
+        movieInfoText.textContent = details.join(" · ") || "—";
+        movieInfo.dataset.state = details.length ? "loaded" : "empty";
+      }
+
+      function parseOptionalNumber(value) {
+        return value.trim() === "" ? null : Number(value);
+      }
+
+      function cancelAnimeCoverLookup() {
+        clearTimeout(animeCoverDebounceTimer);
+        animeCoverDebounceTimer = null;
+        if (animeCoverRequestController) {
+          animeCoverRequestController.abort();
+          animeCoverRequestController = null;
+        }
+        animeCoverRequestId += 1;
+      }
+
+      function setAnimeCoverPreview(coverUrl, state) {
+        coverPreview.dataset.state = state;
+        if (coverUrl) coverImage.src = coverUrl;
+        else coverImage.removeAttribute("src");
+      }
+
+      function cancelMovieMetaLookup() {
+        clearTimeout(movieMetaDebounceTimer);
+        movieMetaDebounceTimer = null;
+        if (movieMetaPendingResolve) {
+          movieMetaPendingResolve(null);
+          movieMetaPendingResolve = null;
+          movieMetaPendingPromise = null;
+        }
+        if (movieMetaRequestController) {
+          movieMetaRequestController.abort();
+          movieMetaRequestController = null;
+        }
+        movieMetaRequestId += 1;
+      }
+
+      function updateMovieMetaPreview() {
+        cancelMovieMetaLookup();
+        const title = nameInput.value.trim();
+        const mediaType = typeInput.value;
+        if ((mediaType !== "movie" && mediaType !== "series") || title.length < 2) return;
+
+        const query = title.toLocaleLowerCase("ru");
+        const requestId = movieMetaRequestId;
+        selectedMovieMeta = {
+          coverUrl: null,
+          year: null,
+          titleRu: null,
+          tmdbId: null,
+          genres: null,
+          tmdbRating: null,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          seriesStatus: null,
+          detailLoaded: false,
+          query,
+          queryType: mediaType
+        };
+
+        movieMetaPendingPromise = new Promise((resolve) => {
+          movieMetaPendingResolve = resolve;
+          movieMetaDebounceTimer = setTimeout(async () => {
+            movieMetaDebounceTimer = null;
+            const controller = new AbortController();
+            movieMetaRequestController = controller;
+            try {
+              const meta = await fetchMovieMeta(
+                title,
+                mediaType,
+                null,
+                controller.signal
+              );
+              if (requestId !== movieMetaRequestId) return;
+              if (!meta.tmdbId) {
+                selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+                setAnimeCoverPreview(null, "error");
+                resolve(meta);
+                return;
+              }
+
+              selectedMovieMeta = { ...selectedMovieMeta, ...meta };
+              if (meta.year !== null && yearInput.value === "") yearInput.value = meta.year;
+              setAnimeCoverPreview(meta.coverUrl, meta.coverUrl ? "loaded" : "loading");
+
+              const details = await fetchMovieDetails(meta.tmdbId, mediaType, controller.signal);
+              if (requestId !== movieMetaRequestId) return;
+              if (details) {
+                applyMovieMeta({ ...selectedMovieMeta, ...details }, query, mediaType);
+              } else {
+                selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+                setAnimeCoverPreview(meta.coverUrl, meta.coverUrl ? "loaded" : "error");
+              }
+              resolve(details);
+            } catch (error) {
+              if (requestId !== movieMetaRequestId) return;
+              console.error("Не удалось автоматически загрузить данные TMDB.", error);
+              selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+              setAnimeCoverPreview(selectedMovieMeta.coverUrl, selectedMovieMeta.coverUrl ? "loaded" : "error");
+              resolve(null);
+            } finally {
+              if (requestId === movieMetaRequestId) {
+                movieMetaRequestController = null;
+                movieMetaPendingPromise = null;
+                movieMetaPendingResolve = null;
+              }
+            }
+          }, 600);
+        });
+      }
+
+      function cancelMovieSearchLookup() {
+        clearTimeout(movieSearchDebounceTimer);
+        movieSearchDebounceTimer = null;
+        if (movieSearchController) {
+          movieSearchController.abort();
+          movieSearchController = null;
+        }
+        movieSearchRequestId += 1;
+      }
+
+      function applyMovieMeta(meta, query, mediaType = typeInput.value) {
+        if (!meta) {
+          selectedMovieMeta = null;
+          movieMetaTitle.hidden = true;
+          movieMetaTitle.textContent = "";
+          setAnimeCoverPreview(null, "error");
+          if (mediaType === "series") updateProgressInfo(null);
+          if (mediaType === "movie") updateMovieInfo(null);
+          return;
+        }
+
+        selectedMovieMeta = { ...meta, query, queryType: mediaType, detailLoaded: true };
+        setAnimeCoverPreview(meta.coverUrl, meta.coverUrl ? "loaded" : "error");
+        if (meta.year !== null && meta.year !== undefined && yearInput.value === "") {
+          yearInput.value = meta.year;
+        }
+        const enteredName = nameInput.value.trim();
+        const differs = meta.titleRu &&
+          meta.titleRu.trim().toLocaleLowerCase("ru") !== enteredName.toLocaleLowerCase("ru");
+        movieMetaTitle.textContent = differs ? `Название на русском: ${meta.titleRu}` : "";
+        movieMetaTitle.hidden = !differs;
+        if (mediaType === "series") updateProgressInfo(meta);
+        if (mediaType === "movie") updateMovieInfo(meta);
+      }
+
+      function updateTitleCoverPreview() {
+        if (typeInput.value === "anime") {
+          cancelMovieMetaLookup();
+          movieMetaTitle.hidden = true;
+          movieMetaTitle.textContent = "";
+          selectedMovieMeta = null;
+          updateProgressControls();
+          updateMovieInfo(null);
+          updateAnimeCoverPreview();
+          return;
+        }
+
+        cancelAnimeCoverLookup();
+        cancelAnimeSearchLookup();
+        hideAnimeSuggestions();
+        selectedAnimeMeta = null;
+        updateProgressControls();
+        updateProgressInfo(null);
+        updateMovieInfo(null);
+        cancelMovieMetaLookup();
+
+        if (typeInput.value !== "movie" && typeInput.value !== "series") {
+          selectedMovieMeta = null;
+          movieMetaTitle.hidden = true;
+          movieMetaTitle.textContent = "";
+          updateMovieInfo(null);
+          setAnimeCoverPreview(null, "empty");
+          return;
+        }
+
+        const name = nameInput.value.trim();
+        const query = name.toLocaleLowerCase("ru");
+        if (name.length < 2) {
+          selectedMovieMeta = null;
+          movieMetaTitle.hidden = true;
+          movieMetaTitle.textContent = "";
+          updateMovieInfo(null);
+          setAnimeCoverPreview(null, "empty");
+          return;
+        }
+
+        if (selectedMovieMeta?.query === query && selectedMovieMeta.queryType === typeInput.value &&
+            (selectedMovieMeta.coverUrl || selectedMovieMeta.titleRu || selectedMovieMeta.tmdbId)) {
+          applyMovieMeta(selectedMovieMeta, query, typeInput.value);
+          return;
+        }
+
+        selectedMovieMeta = null;
+        movieMetaTitle.hidden = true;
+        movieMetaTitle.textContent = "";
+        updateMovieInfo(null);
+        setAnimeCoverPreview(null, "loading");
+        updateMovieMetaPreview();
+      }
+
+      function updateAnimeInfo(meta) {
+        const episodes = meta && meta.episodes;
+        const seasons = meta && meta.seasons;
+        let text = "";
+        if (meta && meta.status === "NOT_YET_RELEASED") {
+          text = "Ещё не вышло";
+        } else if (meta && meta.status === "RELEASING" && episodes == null) {
+          text = "Выходит, число серий неизвестно";
+        } else if (episodes != null) {
+          const totals = [
+            seasons == null ? "" : `${seasons} ${pluralize(seasons, ["сезон", "сезона", "сезонов"])}`,
+            `${episodes} ${pluralize(episodes, ["серия", "серии", "серий"])}`
+          ].filter(Boolean).join(", ");
+          text = `${meta.status === "RELEASING" ? "Выходит, всего" : "Всего"}: ${totals}`;
+        }
+
+        const metadata = [
+          meta?.genres ? `Жанры: ${meta.genres}` : "",
+          meta?.rating == null ? "" : `AniList ${meta.rating.toFixed(1)}`,
+          meta?.duration ? `${formatRuntime(meta.duration)} на серию` : ""
+        ].filter(Boolean);
+        const info = [text, ...metadata].filter(Boolean).join(" · ");
+        animeInfoText.textContent = info || "—";
+        animeInfo.dataset.state = info ? "loaded" : "empty";
+      }
+
+      function cancelAnimeSearchLookup() {
+        clearTimeout(animeSearchDebounceTimer);
+        animeSearchDebounceTimer = null;
+        if (animeSearchController) {
+          animeSearchController.abort();
+          animeSearchController = null;
+        }
+        animeSearchRequestId += 1;
+      }
+
+      function hideAnimeSuggestions() {
+        searchSuggestions.hidden = true;
+        searchSuggestions.replaceChildren();
+        animeSearchResults = [];
+        movieSearchResults = [];
+      }
+
+      function showAnimeSuggestionMessage(message) {
+        searchSuggestions.replaceChildren();
+        const item = document.createElement("div");
+        item.className = "suggestion-empty";
+        item.textContent = message;
+        searchSuggestions.append(item);
+        searchSuggestions.hidden = false;
+      }
+
+      function renderAnimeSuggestions(results) {
+        animeSearchResults = results;
+        searchSuggestions.replaceChildren();
+        if (!results.length) {
+          showAnimeSuggestionMessage("Ничего не найдено");
+          return;
+        }
+
+        results.forEach((result, index) => {
+          const item = document.createElement("button");
+          item.className = "suggestion-item";
+          item.type = "button";
+          item.setAttribute("role", "option");
+          item.dataset.index = index;
+
+          if (result.coverUrl) {
+            const image = document.createElement("img");
+            image.src = result.coverUrl;
+            image.alt = "";
+            image.loading = "lazy";
+            item.append(image);
+          } else {
+            const placeholder = document.createElement("span");
+            placeholder.className = "cover-placeholder";
+            placeholder.textContent = "🍥";
+            item.append(placeholder);
+          }
+
+          const info = document.createElement("span");
+          info.className = "suggestion-info";
+
+          const titleEl = document.createElement("span");
+          titleEl.className = "suggestion-title";
+          titleEl.textContent = result.rusName || result.title || "";
+          info.append(titleEl);
+
+          if (result.isStub) {
+            const metaEl = document.createElement("span");
+            metaEl.className = "suggestion-meta";
+            metaEl.textContent = "Нажми Enter";
+            info.append(metaEl);
+            item.append(info);
+            searchSuggestions.append(item);
+            return;
+          }
+
+          const metaParts = [
+            result.year || "",
+            result.engName && result.engName !== result.rusName ? result.engName : ""
+          ].filter(Boolean);
+
+          if (metaParts.length) {
+            const metaEl = document.createElement("span");
+            metaEl.className = "suggestion-meta";
+            metaEl.textContent = metaParts.join(" · ");
+            info.append(metaEl);
+          }
+
+          item.append(info);
+          searchSuggestions.append(item);
+        });
+
+        searchSuggestions.hidden = false;
+      }
+
+      function renderMovieSuggestions(results) {
+        movieSearchResults = results;
+        searchSuggestions.replaceChildren();
+        if (!results.length) {
+          showAnimeSuggestionMessage("Ничего не найдено");
+          return;
+        }
+
+        results.forEach((result, index) => {
+          const item = document.createElement("button");
+          item.className = "suggestion-item";
+          item.type = "button";
+          item.setAttribute("role", "option");
+          item.dataset.index = index;
+          item.dataset.type = typeInput.value;
+
+          if (result.coverUrl) {
+            const image = document.createElement("img");
+            image.className = "suggestion-cover";
+            image.src = result.coverUrl;
+            image.alt = "";
+            image.loading = "lazy";
+            item.append(image);
+          } else {
+            const placeholder = document.createElement("span");
+            placeholder.className = "cover-placeholder";
+            placeholder.textContent = types[typeInput.value].emoji;
+            item.append(placeholder);
+          }
+
+          const info = document.createElement("span");
+          info.className = "suggestion-info";
+          const title = document.createElement("span");
+          title.className = "suggestion-title";
+          title.textContent = result.titleRu || result.titleOriginal;
+          const meta = document.createElement("span");
+          meta.className = "suggestion-meta";
+          meta.textContent = [result.year || "", result.titleOriginal || ""].filter(Boolean).join(" · ");
+          info.append(title, meta);
+          item.append(info);
+          searchSuggestions.append(item);
+        });
+
+        searchSuggestions.hidden = false;
+      }
+
+      function selectMovieSuggestion(result) {
+        const mediaType = typeInput.value;
+        cancelMovieMetaLookup();
+        cancelMovieSearchLookup();
+        cancelAnimeCoverLookup();
+        nameInput.value = result.titleRu || result.titleOriginal;
+        const query = nameInput.value.trim().toLocaleLowerCase("ru");
+        selectedMovieMeta = {
+          coverUrl: result.coverUrl,
+          year: result.year ? Number(result.year) : null,
+          titleRu: result.titleRu || null,
+          tmdbId: Number.isInteger(result.id) ? result.id : null,
+          genres: null,
+          tmdbRating: null,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          seriesStatus: null,
+          detailLoaded: false,
+          query,
+          queryType: mediaType
+        };
+        if (mediaType === "series") updateProgressInfo(selectedMovieMeta);
+        if (selectedMovieMeta.year !== null && yearInput.value === "") {
+          yearInput.value = selectedMovieMeta.year;
+        }
+        movieMetaTitle.hidden = true;
+        movieMetaTitle.textContent = "";
+        setAnimeCoverPreview(result.coverUrl, result.coverUrl ? "loaded" : "loading");
+        hideAnimeSuggestions();
+
+        const requestId = movieMetaRequestId;
+        movieMetaPendingPromise = new Promise((resolve) => {
+          movieMetaPendingResolve = resolve;
+          const controller = new AbortController();
+          movieMetaRequestController = controller;
+          fetchMovieDetails(result.id, mediaType, controller.signal)
+            .then((meta) => {
+              if (requestId !== movieMetaRequestId) return;
+              if (meta) {
+                applyMovieMeta({ ...selectedMovieMeta, ...meta }, query, mediaType);
+              } else {
+                selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+                setAnimeCoverPreview(result.coverUrl, result.coverUrl ? "loaded" : "error");
+              }
+              resolve(meta);
+            })
+            .catch((error) => {
+              if (requestId !== movieMetaRequestId) return;
+              console.error("Не удалось обработать подробности TMDB.", error);
+              selectedMovieMeta = { ...selectedMovieMeta, detailLoaded: true };
+              setAnimeCoverPreview(result.coverUrl, result.coverUrl ? "loaded" : "error");
+              resolve(null);
+            })
+            .finally(() => {
+              if (requestId === movieMetaRequestId) {
+                movieMetaRequestController = null;
+                movieMetaPendingPromise = null;
+                movieMetaPendingResolve = null;
+              }
+            });
+        });
+      }
+
+      function selectAnimeSuggestion(result) {
+        cancelAnimeCoverLookup();
+        cancelAnimeSearchLookup();
+        const isRussianResult = typeof result.rusName === "string";
+        const selectedName = isRussianResult ? result.rusName : result.title;
+        if (!selectedName) return;
+        nameInput.value = selectedName;
+        console.log("selectAnimeSuggestion: coverUrl", result.coverUrl);
+        if (result.coverUrl) {
+          setAnimeCoverPreview(result.coverUrl, "loaded");
+        }
+        selectedAnimeMeta = {
+          coverUrl: result.coverUrl,
+          episodes: result.episodes,
+          year: result.year,
+          seasons: null,
+          status: result.status ?? null,
+          rusName: isRussianResult ? result.rusName || selectedName : null
+        };
+        const cacheKey = selectedName.toLocaleLowerCase("ru");
+        animeCoverCache[cacheKey] = selectedAnimeMeta;
+        if (!yearManuallyEdited && result.year !== null && result.year !== undefined) {
+          yearInput.value = result.year;
+        }
+        setAnimeCoverPreview(result.coverUrl, result.coverUrl ? "loaded" : "error");
+        updateAnimeInfo(selectedAnimeMeta);
+        hideAnimeSuggestions();
+
+        if (!isRussianResult || !result.engName) return;
+
+        const requestId = animeCoverRequestId;
+        const controller = new AbortController();
+        animeCoverRequestController = controller;
+        fetchAnimeMeta(result.engName, controller.signal)
+          .then((meta) => {
+            if (requestId !== animeCoverRequestId) return;
+            const mergedMeta = {
+              ...meta,
+              ...selectedAnimeMeta,
+              coverUrl: meta.coverUrl || result.coverUrl,
+              episodes: result.episodes ?? meta.episodes,
+              year: result.year ?? meta.year,
+              seasons: meta.seasons,
+              status: meta.status,
+              rusName: result.rusName || selectedName
+            };
+            if ((result.year === null || result.year === undefined) &&
+                meta.year !== null && meta.year !== undefined && yearInput.value === "") {
+              yearInput.value = meta.year;
+            }
+            applyAnimeMeta(mergedMeta, cacheKey);
+          })
+          .catch((error) => {
+            if (requestId === animeCoverRequestId) {
+              console.warn("Не удалось обновить обложку из AniList.", error);
+            }
+          })
+          .finally(() => {
+            if (requestId === animeCoverRequestId) {
+              animeCoverRequestController = null;
+            }
+          });
+      }
+
+      function updateAnimeSuggestions() {
+        cancelAnimeSearchLookup();
+        if (typeInput.value !== "anime" || nameInput.value.trim().length < 2) {
+          hideAnimeSuggestions();
+          return;
+        }
+
+        const title = nameInput.value.trim();
+        console.log("updateAnimeSuggestions → title =", title);
+        console.log("Анисе: старт поиска", title);
+        const requestId = animeSearchRequestId;
+        animeSearchDebounceTimer = setTimeout(async () => {
+          const controller = new AbortController();
+          animeSearchController = controller;
+          try {
+            const shikimoriSearch = searchAnimeRussian(title, controller.signal)
+              .then((results) => {
+                console.log("updateAnimeSuggestions → Shikimori returned", results);
+                if (!Array.isArray(results) || results.length === 0) {
+                  throw new Error("Shikimori не вернул результатов.");
+                }
+                return { source: "Shikimori", results };
+              });
+            const anilistSearch = fetchAnimeSearch(title, controller.signal)
+              .then((animeResults) => {
+                console.log("updateAnimeSuggestions → animeResults from AniList =", animeResults);
+                if (!Array.isArray(animeResults) || animeResults.length === 0) {
+                  throw new Error("AniList не вернул результатов.");
+                }
+                return { source: "AniList", results: animeResults };
+              });
+
+            let winner;
+            try {
+              winner = await Promise.any([shikimoriSearch, anilistSearch]);
+            } catch (error) {
+              if (requestId !== animeSearchRequestId) return;
+              console.error("Не удалось найти аниме ни в Shikimori, ни в AniList.", error);
+              renderAnimeSuggestions([{
+                isStub: true,
+                rusName: title,
+                engName: "",
+                coverUrl: null,
+                episodes: null,
+                year: null,
+                status: null,
+                seasons: null
+              }]);
+              return;
+            }
+
+            controller.abort();
+            let results;
+            if (winner.source === "Shikimori") {
+              results = winner.results;
+              console.log("Анисе: подсказки из Shikimori,", results.length);
+            } else {
+              results = winner.results.slice(0, 5).map((result) => ({
+                  id: result.id,
+                  rusName: result.title || title,
+                  engName: result.title,
+                  originalTitle: result.title,
+                  coverUrl: result.coverUrl,
+                  episodes: result.episodes,
+                  year: result.year,
+                  status: result.status,
+                  seasons: null
+                }));
+              console.log("Анисе: подсказки из AniList,", results.length);
+            }
+            if (requestId !== animeSearchRequestId) return;
+            renderAnimeSuggestions(results);
+          } catch (error) {
+            if (requestId !== animeSearchRequestId) return;
+            console.error("Не удалось выполнить поиск подсказок аниме.", error);
+            renderAnimeSuggestions([{
+              isStub: true,
+              rusName: title,
+              engName: "",
+              coverUrl: null,
+              episodes: null,
+              year: null,
+              status: null,
+              seasons: null
+            }]);
+          } finally {
+            if (requestId === animeSearchRequestId) {
+              animeSearchController = null;
+              animeSearchDebounceTimer = null;
+            }
+          }
+        }, 300);
+      }
+
+      function updateMovieSuggestions() {
+        cancelMovieSearchLookup();
+        if ((typeInput.value !== "movie" && typeInput.value !== "series") ||
+            nameInput.value.trim().length < 2) {
+          hideAnimeSuggestions();
+          return;
+        }
+
+        const title = nameInput.value.trim();
+        const mediaType = typeInput.value;
+        const requestId = movieSearchRequestId;
+        movieSearchDebounceTimer = setTimeout(async () => {
+          const controller = new AbortController();
+          movieSearchController = controller;
+          try {
+            const results = await fetchMovieSearch(title, mediaType, controller.signal);
+            if (requestId !== movieSearchRequestId) return;
+            renderMovieSuggestions(results);
+          } catch (error) {
+            if (requestId !== movieSearchRequestId) return;
+            console.error("Не удалось выполнить поиск подсказок TMDB.", error);
+            showAnimeSuggestionMessage("Не удалось выполнить поиск");
+          } finally {
+            if (requestId === movieSearchRequestId) {
+              movieSearchController = null;
+              movieSearchDebounceTimer = null;
+            }
+          }
+        }, 600);
+      }
+
+      function updateSuggestions() {
+        hideAnimeSuggestions();
+        if (typeInput.value === "anime") {
+          cancelMovieSearchLookup();
+          updateAnimeSuggestions();
+          return;
+        }
+        cancelAnimeSearchLookup();
+        updateMovieSuggestions();
+      }
+
+      function applyAnimeMeta(meta, cacheKey) {
+        selectedAnimeMeta = meta;
+        setAnimeCoverPreview(meta.coverUrl, meta.coverUrl ? "loaded" : "error");
+        updateAnimeInfo(meta);
+
+        if (!yearManuallyEdited && meta.year !== null && meta.year !== undefined) {
+          yearInput.value = meta.year;
+        }
+
+        animeCoverCache[cacheKey] = meta;
+      }
+
+      function updateAnimeCoverPreview() {
+        cancelAnimeCoverLookup();
+        if (typeInput.value !== "anime") {
+          selectedAnimeMeta = null;
+          updateProgressControls();
+          updateAnimeInfo(null);
+          setAnimeCoverPreview(null, "empty");
+          return;
+        }
+
+        updateProgressControls();
+        const name = nameInput.value.trim();
+        if (name.length < 2) {
+          selectedAnimeMeta = null;
+          updateAnimeInfo(null);
+          setAnimeCoverPreview(null, "empty");
+          return;
+        }
+
+        const cacheKey = name.toLocaleLowerCase("ru");
+        if (Object.hasOwn(animeCoverCache, cacheKey)) {
+          applyAnimeMeta(animeCoverCache[cacheKey], cacheKey);
+          return;
+        }
+
+        selectedAnimeMeta = null;
+        updateAnimeInfo(null);
+        setAnimeCoverPreview(null, "loading");
+        const requestId = animeCoverRequestId;
+        animeCoverDebounceTimer = setTimeout(async () => {
+          const controller = new AbortController();
+          animeCoverRequestController = controller;
+          try {
+            const meta = await fetchAnimeMeta(name, controller.signal);
+            if (requestId !== animeCoverRequestId) return;
+
+            applyAnimeMeta(meta, cacheKey);
+          } catch (error) {
+            if (requestId !== animeCoverRequestId) return;
+            console.error("Не удалось обработать ответ AniList.", error);
+            animeCoverCache[cacheKey] = { coverUrl: null, episodes: null, year: null, status: null, seasons: null };
+            selectedAnimeMeta = animeCoverCache[cacheKey];
+            updateAnimeInfo(null);
+            setAnimeCoverPreview(null, "error");
+          } finally {
+            if (requestId === animeCoverRequestId) {
+              animeCoverRequestController = null;
+              animeCoverDebounceTimer = null;
+            }
+          }
+        }, 600);
+      }
+
+      nameInput.addEventListener("input", () => {
+        cancelPrefillDetails();
+        updateTitleCoverPreview();
+        updateSuggestions();
+      });
+      yearInput.addEventListener("input", () => {
+        yearManuallyEdited = true;
+      });
+      typeInput.addEventListener("change", () => {
+        cancelPrefillDetails();
+        updateTitleCoverPreview();
+        updateSuggestions();
+      });
+      searchSuggestions.addEventListener("click", (event) => {
+        const item = event.target.closest(".suggestion-item");
+        if (!item) return;
+        if (typeInput.value === "anime") {
+          const result = animeSearchResults[Number(item.dataset.index)];
+          if (result) selectAnimeSuggestion(result);
+          return;
+        }
+        const result = movieSearchResults[Number(item.dataset.index)];
+        if (result) selectMovieSuggestion(result);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const formType = typeInput.value;
+        const formQuery = nameInput.value.trim().toLocaleLowerCase("ru");
+        if (prefillDetailsPromise) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Ищу...";
+          try {
+            await prefillDetailsPromise;
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Сохранить";
+          }
+        }
+        const hasMatchingMovieMeta = selectedMovieMeta?.query === formQuery &&
+          selectedMovieMeta.queryType === formType;
+        if ((formType === "movie" || formType === "series") &&
+            hasMatchingMovieMeta && !selectedMovieMeta.detailLoaded && movieMetaPendingPromise) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Ищу...";
+          try {
+            await movieMetaPendingPromise;
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Сохранить";
+          }
+        }
+
+        const existingTitle = titles.find((title) => title.id === editingId);
+        const status = statusInput.value;
+        const isAnime = typeInput.value === "anime";
+        const movieMeta = !isAnime ? selectedMovieMeta : null;
+        let coverUrl = typeInput.value === "anime"
+          ? selectedAnimeMeta?.coverUrl || null
+          : movieMeta?.coverUrl || null;
+        const title = {
+          id: editingId || crypto.randomUUID(),
+          name: nameInput.value.trim(),
+          type: typeInput.value,
+          year: parseOptionalNumber(yearInput.value),
+          status,
+          rating: parseOptionalNumber(ratingInput.value),
+          comment: commentInput.value.trim() || null,
+          coverUrl,
+          rusName: isAnime
+            ? selectedAnimeMeta?.rusName ?? existingTitle?.rusName ??
+              (/[А-Яа-яЁё]/.test(nameInput.value) ? nameInput.value.trim() : null)
+            : null,
+          titleRu: !isAnime ? movieMeta?.titleRu ?? null : null,
+          tmdbId: !isAnime ? movieMeta?.tmdbId ?? null : null,
+          genres: !isAnime ? movieMeta?.genres ?? null : null,
+          tmdbRating: !isAnime ? movieMeta?.tmdbRating ?? null : null,
+          runtime: typeInput.value === "movie" ? movieMeta?.runtime ?? null : null,
+          progressSeason: isAnime || typeInput.value === "series"
+            ? parseOptionalNumber(progressSeasonInput.value)
+            : null,
+          progressEpisode: typeInput.value === "series" || isAnime ? parseOptionalNumber(progressEpisodeInput.value) : null,
+          totalSeasons: typeInput.value === "series" ? movieMeta?.totalSeasons ?? null : null,
+          totalEpisodes: typeInput.value === "series" ? movieMeta?.totalEpisodes ?? null : null,
+          seriesStatus: typeInput.value === "series" ? movieMeta?.seriesStatus ?? null : null,
+          episodesTotal: isAnime
+            ? (selectedAnimeMeta ? selectedAnimeMeta.episodes : existingTitle?.episodesTotal ?? null)
+            : null,
+          animeSeasons: isAnime
+            ? (selectedAnimeMeta ? selectedAnimeMeta.seasons : existingTitle?.animeSeasons ?? null)
+            : null,
+          animeGenres: isAnime ? selectedAnimeMeta?.genres ?? existingTitle?.animeGenres ?? null : null,
+          animeRating: isAnime ? selectedAnimeMeta?.rating ?? existingTitle?.animeRating ?? null : null,
+          animeDuration: isAnime ? selectedAnimeMeta?.duration ?? existingTitle?.animeDuration ?? null : null,
+          animeStatus: isAnime ? selectedAnimeMeta?.status ?? existingTitle?.animeStatus ?? null : null,
+          anilistId: isAnime ? selectedAnimeMeta?.anilistId ?? existingTitle?.anilistId ?? null : null,
+          watchedAt: status === "watched"
+            ? (existingTitle && existingTitle.status === "watched" ? existingTitle.watchedAt : new Date().toISOString())
+            : null,
+          createdAt: existingTitle ? existingTitle.createdAt : Date.now()
+        };
+
+        if (editingId) {
+          titles = titles.map((item) => item.id === editingId ? title : item);
+        } else {
+          titles.push(title);
+        }
+        saveTitles();
+        closeForm();
+        render();
+      });
+
+      document.querySelectorAll("[data-view]").forEach((button) => {
+        button.addEventListener("click", () => {
+          showView(button.dataset.view);
+        });
+      });
+      profileContent.addEventListener("click", (event) => {
+        const button = event.target.closest('[data-view="achievements"]');
+        if (button) showView("achievements");
+        if (event.target.closest("#open-statistics")) showView("stats");
+      });
+
+      achievementTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          achievementFilter = tab.dataset.filter;
+          achievementTabs.forEach((item) => {
+            const active = item === tab;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", String(active));
+          });
+          renderAchievements();
+        });
+      });
+
+      document.querySelector('[data-action="add"]').addEventListener("click", () => {
+        setNavActive("add");
+        openForm();
+      });
+      startupScreenSelect.addEventListener("change", () => {
+        const selected = startupScreenSelect.value;
+        if (!Object.hasOwn(startupScreens, selected)) {
+          startupScreenSelect.value = startupScreen;
+          return;
+        }
+        try {
+          localStorage.setItem("startupScreen", selected);
+          showStartupToast(selected);
+        } catch (error) {
+          console.error("Не удалось сохранить стартовую вкладку.", error);
+          startupScreenSelect.value = startupScreen;
+          alert("Не удалось сохранить стартовую вкладку в браузере.");
+        }
+      });
+      popularTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          activePopularType = tab.dataset.type;
+          popularTabs.forEach((item) => {
+            const active = item === tab;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-selected", String(active));
+          });
+          loadPopular(activePopularType);
+        });
+      });
+      refreshPopularButton.addEventListener("click", () => {
+        refreshPopularButton.classList.remove("spinning");
+        void refreshPopularButton.offsetWidth;
+        refreshPopularButton.classList.add("spinning");
+        setTimeout(() => refreshPopularButton.classList.remove("spinning"), 600);
+        loadPopular(activePopularType, true);
+      });
+      popularGrid.addEventListener("click", (event) => {
+        const card = event.target.closest(".popular-card");
+        if (!card) return;
+        const item = popularItems[Number(card.dataset.index)];
+        if (item) openAddFormWithPrefill({ ...item, type: activePopularType, title: item.titleRu });
+      });
+      popularGrid.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const card = event.target.closest(".popular-card");
+        if (!card) return;
+        event.preventDefault();
+        const item = popularItems[Number(card.dataset.index)];
+        if (item) openAddFormWithPrefill({ ...item, type: activePopularType, title: item.titleRu });
+      });
+      popularGrid.addEventListener("error", (event) => {
+        const image = event.target;
+        if (!(image instanceof HTMLImageElement) || !image.dataset.fallback) return;
+        const placeholder = document.createElement("span");
+        placeholder.className = "popular-poster-placeholder";
+        placeholder.setAttribute("aria-hidden", "true");
+        placeholder.textContent = image.dataset.fallback;
+        image.replaceWith(placeholder);
+      }, true);
+      document.querySelector("#close-dialog").addEventListener("click", closeForm);
+      document.querySelector("#cancel-dialog").addEventListener("click", closeForm);
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) closeForm();
+      });
+      coverImage.addEventListener("error", () => {
+        if (!coverImage.getAttribute("src")) return;
+        setAnimeCoverPreview(null, coverPreview.dataset.state === "loading-cover" ? "loading" : "error");
+      });
+      titleList.addEventListener("error", (event) => {
+        const image = event.target;
+        if (!(image instanceof HTMLImageElement) || !image.dataset.fallback) return;
+        const placeholder = document.createElement("span");
+        placeholder.className = "type-emoji cover-placeholder";
+        placeholder.setAttribute("aria-hidden", "true");
+        placeholder.textContent = image.dataset.fallback;
+        image.replaceWith(placeholder);
+      }, true);
+      [searchInput, typeFilter, statusFilter].forEach((control) => {
+        control.addEventListener("input", renderList);
+        control.addEventListener("change", renderList);
+      });
+
+      titleList.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        if (button.dataset.edit) {
+          const title = titles.find((item) => item.id === button.dataset.edit);
+          if (title) openForm(title);
+        } else if (button.dataset.delete) {
+          const title = titles.find((item) => item.id === button.dataset.delete);
+          if (title && confirm(`Удалить «${title.name}» из списка?`)) {
+            titles = titles.filter((item) => item.id !== title.id);
+            saveTitles();
+            render();
+          }
+        }
+      });
+
+      document.querySelector("#export-button").addEventListener("click", () => {
+        const file = new Blob([JSON.stringify(titles, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `kadr-watchlist-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.querySelector("#import-button").addEventListener("click", () => importFile.click());
+      importFile.addEventListener("change", async () => {
+        const [file] = importFile.files || [];
+        if (!file) return;
+        try {
+          const parsed = JSON.parse(await file.text());
+          if (!Array.isArray(parsed) || !parsed.every(isValidTitle)) {
+            throw new Error("Файл должен содержать список тайтлов в формате JSON, экспортированном из Кадра.");
+          }
+          if (!confirm(`Заменить текущий список? В файле ${parsed.length} ${pluralize(parsed.length, ["тайтл", "тайтла", "тайтлов"])}.`)) return;
+          titles = parsed.map(normalizeTitle);
+          saveTitles();
+          render();
+          alert("Список успешно импортирован.");
+        } catch (error) {
+          console.error("Не удалось импортировать список.", error);
+          alert(error instanceof SyntaxError ? "Не удалось прочитать JSON. Проверьте формат файла." : error.message);
+        } finally {
+          importFile.value = "";
+        }
+      });
+
+      render();
+      if (startupScreen === "add") {
+        showView("list");
+        setNavActive("add");
+        openForm();
+      } else {
+        showView(startupScreen);
+      }
+
+      if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+        navigator.serviceWorker.register("./sw.js").catch((error) => {
+          console.error("Не удалось зарегистрировать Service Worker.", error);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
